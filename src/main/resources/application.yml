@@ -2,11 +2,10 @@ spring:
   autoconfigure:
     exclude: com.alibaba.druid.spring.boot.autoconfigure.DruidDataSourceAutoConfigure
   datasource:
-    url: jdbc:mysql://localhost:3306/ai_hub?useSSL=false&useUnicode=true&serverTimezone=Hongkong&characterEncoding=utf8&allowPublicKeyRetrieval=true
+    url: jdbc:mysql://gz-cynosdbmysql-grp-dxzq6on3.sql.tencentcdb.com:20273/test?useSSL=false&useUnicode=true&serverTimezone=Hongkong&characterEncoding=utf8&allowPublicKeyRetrieval=true
     username: root
-    password: password
+    password: ac16508...
     driver-class-name: com.mysql.cj.jdbc.Driver
-    dbname: zabbix
 
 mybatis:
   configuration:

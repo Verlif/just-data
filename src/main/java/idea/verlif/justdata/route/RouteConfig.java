@@ -2,8 +2,8 @@ package idea.verlif.justdata.route;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.PropertySource;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -16,7 +16,11 @@ import java.util.List;
 public class RouteConfig {
 
     private String path = "./";
-    private List<String> blocked;
+    private final BlockedList blockedList;
+
+    public RouteConfig() {
+        blockedList = new BlockedList();
+    }
 
     public String getPath() {
         return path;
@@ -26,11 +30,35 @@ public class RouteConfig {
         this.path = path;
     }
 
-    public List<String> getBlocked() {
-        return blocked;
+    public BlockedList getBlockedList() {
+        return blockedList;
     }
 
-    public void setBlocked(List<String> blocked) {
-        this.blocked = blocked;
+    public boolean isAllowApi(String api) {
+        return !blockedList.apiList.contains(api);
+    }
+
+    public boolean isAllowLabel(String label) {
+        return !blockedList.labelList.contains(label);
+    }
+
+    public static final class BlockedList {
+
+        private final List<String> apiList;
+        private final List<String> labelList;
+
+        public BlockedList() {
+            apiList = new ArrayList<>();
+            labelList = new ArrayList<>();
+        }
+
+        public List<String> getApiList() {
+            return apiList;
+        }
+
+        public List<String> getLabelList() {
+            return labelList;
+        }
+
     }
 }

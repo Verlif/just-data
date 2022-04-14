@@ -97,4 +97,12 @@ public class ItemParser {
         }
         return document;
     }
+
+    public String getLabel() {
+        return label;
+    }
+
+    public String getDbname() {
+        return dbname;
+    }
 }

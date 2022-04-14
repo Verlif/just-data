@@ -5,6 +5,7 @@ import idea.verlif.justdata.base.result.ext.FailResult;
 import idea.verlif.justdata.base.result.ext.OkResult;
 import idea.verlif.justdata.item.Item;
 import idea.verlif.justdata.route.RouteManager;
+import idea.verlif.justdata.route.Router;
 import idea.verlif.justdata.sql.SqlExecutor;
 import idea.verlif.justdata.util.MessagesUtils;
 import idea.verlif.justdata.util.ResultSetUtils;
@@ -25,8 +26,8 @@ import java.util.Map;
  * @date 2022/4/8 11:33
  */
 @RestController
-@RequestMapping("/api/db")
-public class TotalController {
+@RequestMapping("/api")
+public class ItemController {
 
     @Autowired
     private RouteManager routeManager;
@@ -34,9 +35,16 @@ public class TotalController {
     @Autowired
     private SqlExecutor sqlExecutor;
 
-    @GetMapping("/{api}")
-    public BaseResult<List<Map<String, Object>>> get(@PathVariable String api, HttpServletRequest request) throws SQLException {
-        Item item = routeManager.get(api);
+    @GetMapping("/{label}/{api}")
+    public BaseResult<List<Map<String, Object>>> get(
+            @PathVariable String label,
+            @PathVariable String api,
+            HttpServletRequest request) throws SQLException {
+        Router router = routeManager.getRouter(label);
+        if (router == null) {
+            return new FailResult<>(MessagesUtils.message("no.such.label"));
+        }
+        Item item = router.get(api);
         if (item == null) {
             return new FailResult<>(MessagesUtils.message("no.such.api"));
         }
@@ -51,7 +59,6 @@ public class TotalController {
         while (keys.hasMoreElements()) {
             String key = keys.nextElement();
             map.put(key, request.getParameter(key));
-            System.out.println("key: " + key + ", value" + request.getParameter(key));
         }
         return map;
     }

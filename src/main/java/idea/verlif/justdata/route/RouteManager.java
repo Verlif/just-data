@@ -12,6 +12,8 @@ import org.springframework.stereotype.Component;
 import java.io.File;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * @author Verlif
@@ -23,19 +25,13 @@ public class RouteManager implements ApplicationRunner {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(RouteManager.class);
 
-    private final HashMap<String, Item> getMap;
-    private final HashMap<String, Item> postMap;
-    private final HashMap<String, Item> deleteMap;
-    private final HashMap<String, Item> putMap;
-
     @Autowired
     private RouteConfig routeConfig;
 
+    private final Map<String, Router> routerMap;
+
     public RouteManager() {
-        this.getMap = new HashMap<>();
-        this.postMap = new HashMap<>();
-        this.deleteMap = new HashMap<>();
-        this.putMap = new HashMap<>();
+        routerMap = new HashMap<>();
     }
 
     @Override
@@ -48,42 +44,32 @@ public class RouteManager implements ApplicationRunner {
                 LOGGER.debug("Loading xml - " + file.getName());
                 ItemParser parser = new ItemParser(file);
                 List<Item> list = parser.parser();
-                for (Item item : list) {
-                    switch (item.getMethod()) {
-                        case "GET":
-                            getMap.put(item.getApi(), item);
-                            break;
-                        case "PUT":
-                            putMap.put(item.getApi(), item);
-                            break;
-                        case "DELETE":
-                            deleteMap.put(item.getApi(), item);
-                            break;
-                        default:
-                            postMap.put(item.getApi(), item);
+                String label = parser.getLabel();
+                if (routeConfig.isAllowLabel(label)) {
+                    Router router = getRouter(label);
+                    if (router == null) {
+                        router = new Router(label);
+                        addRouter(router);
+                    }
+                    for (Item item : list) {
+                        if (routeConfig.isAllowApi(item.getApi())) {
+                            router.addItem(item);
+                        }
                     }
                 }
             }
         }
-        LOGGER.debug("Api-   get\tload\t" + getMap.size());
-        LOGGER.debug("Api-  post\tload\t" + postMap.size());
-        LOGGER.debug("Api-   put\tload\t" + putMap.size());
-        LOGGER.debug("Api-delete\tload\t" + deleteMap.size());
     }
 
-    public Item get(String api) {
-        return getMap.get(api);
+    public void addRouter(Router router) {
+        routerMap.put(router.getLabel(), router);
     }
 
-    public Item post(String api) {
-        return postMap.get(api);
+    public Router getRouter(String label) {
+        return routerMap.get(label);
     }
 
-    public Item put(String api) {
-        return putMap.get(api);
-    }
-
-    public Item delete(String api) {
-        return deleteMap.get(api);
+    public Set<String> labelSet() {
+        return routerMap.keySet();
     }
 }

@@ -9,6 +9,8 @@ import java.util.Locale;
  */
 public class Item {
 
+    private final static char DIVIDE = '/';
+
     /**
      * 操作项名称
      */
@@ -55,7 +57,11 @@ public class Item {
     }
 
     public void setApi(String api) {
-        this.api = api;
+        if (api.charAt(0) == DIVIDE) {
+            this.api = api.substring(1);
+        } else {
+            this.api = api;
+        }
     }
 
     public String getMethod() {
