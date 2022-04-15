@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<info>
+    <dbs>
+        <db>
+            <label>remote</label>
+            <url>jdbc:mysql://gz-cynosdbmysql-grp-dxzq6on3.sql.tencentcdb.com:20273/test?useSSL=false&amp;useUnicode=true&amp;serverTimezone=Hongkong&amp;characterEncoding=utf8&amp;allowPublicKeyRetrieval=true</url>
+            <username>remote</username>
+            <password>Remote...</password>
+        </db>
+    </dbs>
+    <items label="remote">
+        <item name="getUserById">
+            <api>user</api>
+            <method>GET</method>
+            <sql>SELECT * FROM user WHERE user_id = #{userId:1}</sql>
+        </item>
+        <item name="addUser">
+            <api>user</api>
+            <method>POST</method>
+            <sql>INSERT INTO user (user_id, name, sex) VALUES (@{userId}, '@{name}', @{sex})</sql>
+        </item>
+        <item name="delUserById">
+            <api>user</api>
+            <method>DELETE</method>
+            <sql>DELETE FROM user WHERE user_id = #{userId}</sql>
+        </item>
+    </items>
+</info>

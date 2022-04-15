@@ -1,7 +1,7 @@
 package idea.verlif.justdata.route;
 
+import idea.verlif.justdata.constant.MethodConstant;
 import idea.verlif.justdata.item.Item;
-import org.springframework.beans.factory.annotation.Autowired;
 
 import java.io.Serializable;
 import java.util.HashMap;
@@ -30,13 +30,13 @@ public class Router {
 
     public void addItem(Item item) {
         switch (item.getMethod()) {
-            case "GET":
+            case MethodConstant.GET:
                 getMap.put(item.getApi(), item);
                 break;
-            case "PUT":
+            case MethodConstant.PUT:
                 putMap.put(item.getApi(), item);
                 break;
-            case "DELETE":
+            case MethodConstant.DELETE:
                 deleteMap.put(item.getApi(), item);
                 break;
             default:

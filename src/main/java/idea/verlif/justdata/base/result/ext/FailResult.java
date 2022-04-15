@@ -42,7 +42,7 @@ public class FailResult<T> extends BaseResult<T> {
      *
      * @return 无数据失败结果，无法改变其中的数据
      */
-    public static FailResult<?> empty() {
-        return RESULT_FAIL;
+    public static <T> FailResult<T> empty() {
+        return (FailResult<T>) RESULT_FAIL;
     }
 }

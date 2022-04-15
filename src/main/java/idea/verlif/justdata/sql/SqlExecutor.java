@@ -1,5 +1,8 @@
 package idea.verlif.justdata.sql;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import idea.verlif.justdata.item.Item;
 import idea.verlif.justdata.util.DataSourceUtils;
 import idea.verlif.parser.vars.VarsContext;
@@ -14,6 +17,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.HashMap;
 import java.util.Map;
 
 /**
@@ -31,45 +35,136 @@ public class SqlExecutor {
     @Autowired
     private DataSource dataSource;
 
+    private final Map<String, Connection> connectionMap;
+    private final ObjectMapper objectMapper;
+
+    public SqlExecutor() {
+        this.connectionMap = new HashMap<>();
+        this.objectMapper = new ObjectMapper();
+    }
+
     /**
      * 执行操作项
      *
      * @param item 操作项
      * @param map  操作项参数
+     * @param body 请求内容
      * @return 执行结果
      * @throws SQLException 执行错误
      */
-    public ResultSet exec(Item item, Map<String, Object> map) throws SQLException {
+    public ResultSet exec(Item item, Map<String, Object> map, String body) throws SQLException, JsonProcessingException {
         // sql变量替换
-        VarsContext context = new VarsContext(item.getSql());
-        context.setAreaTag("#{", "}");
-        String sql = context.build(new VarsReplaceHandler(map));
+        VarsContext paramContext = new VarsContext(item.getSql());
+        paramContext.setAreaTag("#{", "}");
+        String sql = paramContext.build(new ParamReplaceHandler(map));
+        if (body != null && body.length() > 2) {
+            // 将请求内容转换为json
+            JsonNode node = objectMapper.readTree(body);
+            VarsContext bodyContext = new VarsContext(sql);
+            sql = bodyContext.build(new BodyReplaceHandler(node));
+        }
         LOGGER.debug(sql);
         // 切换数据源
         DataSourceUtils.switchDB(item);
         // 获取数据库连接
-        Connection connection = dataSource.getConnection();
+        Connection connection = getConnect(item);
         PreparedStatement statement = connection.prepareStatement(sql);
         return statement.executeQuery();
     }
 
-    private static final class VarsReplaceHandler implements VarsHandler {
+    /**
+     * 执行操作项
+     *
+     * @param item 操作项
+     * @param map  操作项参数
+     * @param body 请求内容
+     * @return 执行结果
+     * @throws SQLException 执行错误
+     */
+    public boolean update(Item item, Map<String, Object> map, String body) throws SQLException, JsonProcessingException {
+        // sql变量替换
+        String sql = parserSql(item, map, body);
+        // 切换数据源
+        DataSourceUtils.switchDB(item);
+        // 获取数据库连接
+        Connection connection = getConnect(item);
+        return connection.createStatement().executeUpdate(sql) > 0;
+    }
+
+    /**
+     *
+     * @param item 操作项
+     * @param map  操作项参数
+     * @param body 请求内容
+     * @return 解析后的sql
+     * @throws JsonProcessingException 无法解析body
+     */
+    private String parserSql(Item item, Map<String, Object> map, String body) throws JsonProcessingException {
+        VarsContext paramContext = new VarsContext(item.getSql());
+        paramContext.setAreaTag("#{", "}");
+        String sql = paramContext.build(new ParamReplaceHandler(map));
+        if (body != null && body.length() > 2) {
+            // 将请求内容转换为json
+            JsonNode node = objectMapper.readTree(body);
+            VarsContext bodyContext = new VarsContext(sql);
+            sql = bodyContext.build(new BodyReplaceHandler(node));
+        }
+        LOGGER.debug(sql);
+        return sql;
+    }
+
+    private Connection getConnect(Item item) throws SQLException {
+        Connection connection = connectionMap.get(item.getLabel());
+        if (connection == null) {
+            connection = dataSource.getConnection();
+            connectionMap.put(item.getLabel(), connection);
+        }
+        return connection;
+    }
+
+    private static final class ParamReplaceHandler implements VarsHandler {
+
+        private static final String SPLIT = ":";
 
         private final Map<String, Object> map;
 
-        public VarsReplaceHandler(Map<String, Object> map) {
+        public ParamReplaceHandler(Map<String, Object> map) {
             this.map = map;
         }
 
         @Override
         public String handle(int i, String s, String s1) {
+            String[] ss = s1.split(SPLIT, 2);
+            s1 = ss[0];
             if (map.containsKey(s1)) {
                 Object o = map.get(s1);
-                if (o instanceof Integer || o instanceof Long || o instanceof Double) {
-                    return o.toString();
-                } else {
-                    return "'" + o.toString() + "'";
-                }
+                return o.toString();
+            } else if (ss.length == 2) {
+                return ss[1];
+            }
+            return s;
+        }
+    }
+
+    private static final class BodyReplaceHandler implements VarsHandler {
+
+        private static final String SPLIT = ":";
+
+        private final JsonNode node;
+
+        public BodyReplaceHandler(JsonNode node) {
+            this.node = node;
+        }
+
+        @Override
+        public String handle(int i, String s, String s1) {
+            String[] ss = s1.split(SPLIT, 2);
+            s1 = ss[0];
+            JsonNode val = node.get(s1);
+            if (val != null) {
+                return val.asText();
+            } else if (ss.length == 2) {
+                return ss[1];
             }
             return s;
         }
