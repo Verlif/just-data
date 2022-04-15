@@ -1,7 +1,7 @@
 package idea.verlif.justdata.sql;
 
 import idea.verlif.justdata.item.Item;
-import idea.verlif.justdata.route.RouteManager;
+import idea.verlif.justdata.util.DataSourceUtils;
 import idea.verlif.parser.vars.VarsContext;
 import idea.verlif.parser.vars.VarsHandler;
 import org.slf4j.Logger;
@@ -40,10 +40,14 @@ public class SqlExecutor {
      * @throws SQLException 执行错误
      */
     public ResultSet exec(Item item, Map<String, Object> map) throws SQLException {
+        // sql变量替换
         VarsContext context = new VarsContext(item.getSql());
         context.setAreaTag("#{", "}");
         String sql = context.build(new VarsReplaceHandler(map));
-        LOGGER.debug("sql-" + item.getApi() + "-" + sql);
+        LOGGER.debug(sql);
+        // 切换数据源
+        DataSourceUtils.switchDB(item);
+        // 获取数据库连接
         Connection connection = dataSource.getConnection();
         PreparedStatement statement = connection.prepareStatement(sql);
         return statement.executeQuery();

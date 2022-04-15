@@ -15,19 +15,10 @@ import java.util.List;
 @ConfigurationProperties(prefix = "route")
 public class RouteConfig {
 
-    private String path = "./";
     private final BlockedList blockedList;
 
     public RouteConfig() {
         blockedList = new BlockedList();
-    }
-
-    public String getPath() {
-        return path;
-    }
-
-    public void setPath(String path) {
-        this.path = path;
     }
 
     public BlockedList getBlockedList() {

@@ -1,11 +1,11 @@
 package idea.verlif.justdata.item;
 
+import idea.verlif.justdata.datasource.DataSourceItem;
 import org.dom4j.Document;
 import org.dom4j.Element;
 import org.dom4j.io.SAXReader;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.util.xml.DomUtils;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -22,8 +22,6 @@ public class ItemParser {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ItemParser.class);
 
-    private String dbname;
-
     private String label;
 
     private final File file;
@@ -32,38 +30,77 @@ public class ItemParser {
         this.file = file;
     }
 
-    public List<Item> parser() {
-        List<Item> items = new ArrayList<>();
+    public List<DataSourceItem> getDataSourceItemList() {
+        List<DataSourceItem> list = new ArrayList<>();
+        Document document = load(file);
+        if (document == null) {
+            return list;
+        }
+        // 获取根节点
+        Element root = document.getRootElement();
+        Element dbs = root.element("dbs");
+        if (dbs == null) {
+            return list;
+        }
+        List dbList = dbs.elements("db");
+        if (dbList == null) {
+            return list;
+        }
+        for (Object o : dbList) {
+            if (o instanceof Element) {
+                Element db = (Element) o;
+                DataSourceItem item = new DataSourceItem();
+                String label = db.elementText("label");
+                if (label == null) {
+                    continue;
+                }
+                item.setLabel(label);
+                item.setUrl(db.elementText("url"));
+                item.setUsername(db.elementText("username"));
+                item.setPassword(db.elementText("password"));
+                item.setDriver(db.elementText("driver"));
+                list.add(item);
+            }
+        }
+        return list;
+    }
+
+    public List<Item> getItemList() {
+        List<Item> list = new ArrayList<>();
         Document document = load(file);
         if (document != null) {
             // 获取根节点
             Element root = document.getRootElement();
-            // 加载数据库信息
-            dbname = root.attributeValue("name");
-            if (dbname == null) {
-                return items;
+            Element items = root.element("items");
+            if (items == null) {
+                return list;
             }
-            label = root.attributeValue("label");
+            List itemList = items.elements("item");
+            if (itemList == null) {
+                return list;
+            }
+            // 加载标签信息
+            label = items.attributeValue("label");
             if (label == null) {
-                label = dbname;
+                return list;
             }
             // 加载操作项
-            for (Object obj : root.elements()) {
+            for (Object obj : itemList) {
                 if (obj instanceof Element) {
                     Element element = (Element) obj;
                     Item item = new Item();
-                    item.setDbname(dbname);
+                    item.setLabel(label);
                     // 获取操作项名称
                     String itemName = element.attributeValue("name");
                     if (itemName == null) {
-                        item.setName(label + "-" + items.size());
+                        item.setName(label + "-" + itemList.size());
                     } else {
                         item.setName(itemName);
                     }
                     // 获取API
                     String api = element.elementText("api");
                     if (api == null) {
-                        api = itemName;
+                        api = item.getName();
                     }
                     item.setApi(api);
                     // 获取Method
@@ -80,11 +117,11 @@ public class ItemParser {
                     }
                     item.setSql(sql);
                     // 将操作项添加到列表
-                    items.add(item);
+                    list.add(item);
                 }
             }
         }
-        return items;
+        return list;
     }
 
     public static Document load(File file) {
@@ -102,7 +139,4 @@ public class ItemParser {
         return label;
     }
 
-    public String getDbname() {
-        return dbname;
-    }
 }

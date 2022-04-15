@@ -2,14 +2,14 @@
 <info>
     <dbs>
         <db>
-            <label>test</label>
-            <url>jdbc:mysql://127.0.0.1:3306/test?useSSL=false&amp;useUnicode=true&amp;serverTimezone=Hongkong&amp;characterEncoding=utf8&amp;allowPublicKeyRetrieval=true</url>
+            <label>demo</label>
+            <url>jdbc:mysql://127.0.0.1:3306/demo?useSSL=false&amp;useUnicode=true&amp;serverTimezone=Hongkong&amp;characterEncoding=utf8&amp;allowPublicKeyRetrieval=true</url>
             <username>root</username>
             <password>password</password>
             <driver>com.mysql.cj.jdbc.Driver</driver>
         </db>
     </dbs>
-    <items label="test">
+    <items label="demo">
         <item name="getUserById">
             <api>user</api>
             <method>GET</method>

@@ -19,7 +19,7 @@ public class Item {
     /**
      * 操作向关联数据库
      */
-    private String dbname;
+    private String label;
 
     /**
      * 操作项API
@@ -44,12 +44,12 @@ public class Item {
         this.name = name;
     }
 
-    public String getDbname() {
-        return dbname;
+    public String getLabel() {
+        return label;
     }
 
-    public void setDbname(String dbname) {
-        this.dbname = dbname;
+    public void setLabel(String label) {
+        this.label = label;
     }
 
     public String getApi() {
@@ -84,7 +84,7 @@ public class Item {
     public String toString() {
         return "Item{" +
                 "name='" + name + '\'' +
-                ", dbname='" + dbname + '\'' +
+                ", dbname='" + label + '\'' +
                 ", api='" + api + '\'' +
                 ", method='" + method + '\'' +
                 ", sql='" + sql + '\'' +

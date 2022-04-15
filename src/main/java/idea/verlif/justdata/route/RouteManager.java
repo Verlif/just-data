@@ -2,6 +2,7 @@ package idea.verlif.justdata.route;
 
 import idea.verlif.justdata.item.Item;
 import idea.verlif.justdata.item.ItemParser;
+import idea.verlif.justdata.item.ItemParserManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,6 +29,9 @@ public class RouteManager implements ApplicationRunner {
     @Autowired
     private RouteConfig routeConfig;
 
+    @Autowired
+    private ItemParserManager parserManager;
+
     private final Map<String, Router> routerMap;
 
     public RouteManager() {
@@ -36,25 +40,19 @@ public class RouteManager implements ApplicationRunner {
 
     @Override
     public void run(ApplicationArguments args) throws Exception {
-        File dir = new File(routeConfig.getPath());
-        File[] files = dir.listFiles(pathname -> pathname.isFile() && pathname.getName().endsWith(".xml"));
-        if (files != null) {
-            LOGGER.debug("Found xml file " + files.length);
-            for (File file : files) {
-                LOGGER.debug("Loading xml - " + file.getName());
-                ItemParser parser = new ItemParser(file);
-                List<Item> list = parser.parser();
-                String label = parser.getLabel();
-                if (routeConfig.isAllowLabel(label)) {
-                    Router router = getRouter(label);
-                    if (router == null) {
-                        router = new Router(label);
-                        addRouter(router);
-                    }
-                    for (Item item : list) {
-                        if (routeConfig.isAllowApi(item.getApi())) {
-                            router.addItem(item);
-                        }
+        Map<String, ItemParser> parserMap = parserManager.getParserMap();
+        for (ItemParser parser : parserMap.values()) {
+            List<Item> list = parser.getItemList();
+            String label = parser.getLabel();
+            if (routeConfig.isAllowLabel(label)) {
+                Router router = getRouter(label);
+                if (router == null) {
+                    router = new Router(label);
+                    addRouter(router);
+                }
+                for (Item item : list) {
+                    if (routeConfig.isAllowApi(item.getApi())) {
+                        router.addItem(item);
                     }
                 }
             }

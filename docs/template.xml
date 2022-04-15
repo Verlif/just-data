@@ -1,18 +1,30 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <info>
+    <!-- 数据库列表 -->
     <dbs>
+        <!-- 单个数据库信息 -->
         <db>
+            <!-- 数据库标签，加载的同名数据标签只能存在数据库信息 -->
             <label>test</label>
+            <!-- 数据库URL -->
             <url>jdbc:mysql://127.0.0.1:3306/test?useSSL=false&amp;useUnicode=true&amp;serverTimezone=Hongkong&amp;characterEncoding=utf8&amp;allowPublicKeyRetrieval=true</url>
+            <!-- 数据库名 -->
             <username>root</username>
+            <!-- 数据库密码 -->
             <password>password</password>
+            <!-- 数据库驱动 -->
             <driver>com.mysql.cj.jdbc.Driver</driver>
         </db>
     </dbs>
+    <!-- 操作项列表，label是必要的属性，表示了子操作项属于哪个数据库 -->
     <items label="test">
+        <!-- 操作项信息，name表示了此操作项的名称 -->
         <item name="getUserById">
+            <!-- 操作项在访问链接中的API段 -->
             <api>user</api>
+            <!-- 操作项的url访问方式，包括GET、POST、PUT、DELETE -->
             <method>GET</method>
+            <!-- 操作项sql -->
             <sql>SELECT * FROM sys_user WHERE user_id = #{userId}</sql>
         </item>
     </items>
