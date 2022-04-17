@@ -9,7 +9,7 @@ import org.springframework.context.annotation.Configuration;
  * @date 2022/4/15 15:49
  */
 @Configuration
-@ConfigurationProperties(prefix = "items")
+@ConfigurationProperties(prefix = "just-data.items")
 public class ItemConfig {
 
     private String path = "./";

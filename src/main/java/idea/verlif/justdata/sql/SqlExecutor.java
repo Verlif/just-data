@@ -149,6 +149,7 @@ public class SqlExecutor {
     private static final class BodyReplaceHandler implements VarsHandler {
 
         private static final String SPLIT = ":";
+        private static final String LINK_SPLIT = "\\.";
 
         private final JsonNode node;
 
@@ -160,7 +161,14 @@ public class SqlExecutor {
         public String handle(int i, String s, String s1) {
             String[] ss = s1.split(SPLIT, 2);
             s1 = ss[0];
-            JsonNode val = node.get(s1);
+            String[] link = s1.split(LINK_SPLIT);
+            JsonNode val = node;
+            for (String s2 : link) {
+                if (val == null) {
+                    break;
+                }
+                val = val.get(s2);
+            }
             if (val != null) {
                 return val.asText();
             } else if (ss.length == 2) {

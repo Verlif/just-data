@@ -25,8 +25,11 @@ logging:
   level:
     idea.verlif.justdata: DEBUG
 
-items:
-  path: src\test\java\resources\envo
+just-data:
+  items:
+    path: src\test\java\resources\envo
+  exception:
+    file: log\exception.log
 
 station:
   api-log:

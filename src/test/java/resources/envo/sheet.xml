@@ -13,7 +13,17 @@
         <item name="getUserById">
             <api>user</api>
             <method>GET</method>
-            <sql>SELECT * FROM sys_user WHERE user_id = #{userId}</sql>
+            <sql>SELECT * FROM sys_user WHERE user_id = #{userId:1}</sql>
+        </item>
+        <item name="addUser">
+            <api>user</api>
+            <method>POST</method>
+            <sql>INSERT INTO sys_user (user_id, name, sex) VALUES (@{user.userId}, '@{user.name}', @{user.sex})</sql>
+        </item>
+        <item name="delUserById">
+            <api>user</api>
+            <method>DELETE</method>
+            <sql>DELETE FROM sys_user WHERE user_id = #{userId}</sql>
         </item>
     </items>
 </info>
