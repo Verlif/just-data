@@ -2,8 +2,6 @@ package idea.verlif.justdata.util;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.JsonNodeFactory;
-import com.fasterxml.jackson.databind.node.ObjectNode;
 import idea.verlif.justdata.base.result.BaseResult;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
@@ -18,7 +16,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
- * Describe: Servlet 工具类
+ * Servlet 工具类
  */
 public class ServletUtils {
 
@@ -27,9 +25,9 @@ public class ServletUtils {
     private static final ObjectMapper MAPPER = new ObjectMapper();
 
     /**
-     * Describe: 获取 HttpServletRequest 对象
-     * Param null
-     * Return HttpServletRequest
+     * 获取 HttpServlet获取请求中的对象
+     *
+     * @return HttpServletRequest
      */
     public static HttpServletRequest getRequest() {
         ServletRequestAttributes attributes = (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
@@ -37,9 +35,9 @@ public class ServletUtils {
     }
 
     /**
-     * Describe: 获取 HttpServletResponse 对象
-     * Param null
-     * Return HttpServletResponse
+     * 获取 HttpServletResponse 对象
+     *
+     * @return HttpServletResponse
      */
     public static HttpServletResponse getResponse() {
         ServletRequestAttributes attributes = (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
@@ -47,9 +45,9 @@ public class ServletUtils {
     }
 
     /**
-     * Describe: 获取 HttpServletSession 对象
-     * Param null
-     * Return HttpServletSession
+     * 获取 HttpServletSession 对象
+     *
+     * @return HttpServletSession
      */
     public static HttpSession getSession() {
         ServletRequestAttributes attributes = (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
@@ -57,9 +55,10 @@ public class ServletUtils {
     }
 
     /**
-     * Describe: 获取 Request 请求参数
-     * Param paramName
-     * Return String
+     * 获取 获取请求中的请求参数
+     *
+     * @param paramName 参数名称
+     * @return 参数内容
      */
     public static String getParameter(String paramName) {
         HttpServletRequest request = getRequest();
@@ -71,15 +70,15 @@ public class ServletUtils {
     }
 
     /**
-     * Describe: 获取 Request Body 请求参数
-     * Param: paramName
-     * Return: String
+     * 获取 获取请求中的Body 请求参数
+     *
+     * @return 请求中的Body转换为的JSON对象
      */
     public static JsonNode getBodyParameters() {
         try {
             HttpServletRequest request = getRequest();
             if (request == null) {
-                return new ObjectNode(new JsonNodeFactory(true));
+                return MAPPER.nullNode();
             } else {
                 InputStreamReader reader = new InputStreamReader(request.getInputStream(), StandardCharsets.UTF_8);
                 char[] buff = new char[1024];
@@ -97,9 +96,9 @@ public class ServletUtils {
     }
 
     /**
-     * Describe: Response 对象写出数据
-     * Param: msg 消息数据
-     * Return null
+     * Response 对象写出数据
+     *
+     * @param msg 消息数据
      */
     public static void write(String msg) throws IOException {
         HttpServletResponse response = getResponse();
@@ -112,36 +111,36 @@ public class ServletUtils {
     }
 
     /**
-     * Describe: Response 对象写出 JSON 数据
-     * Param: object 消息数据
-     * Return null
+     * Response 对象写出 JSON 数据
+     *
+     * @param data 消息数据
      */
     public static void writeJson(Object data) throws IOException {
         write(MAPPER.valueToTree(data).toString());
     }
 
     /**
-     * Describe: Request 请求参数
-     * Param: null
-     * Return string
+     * 获取请求中的请求参数
+     *
+     * @return 请求参数字符串
      */
     public static String getQueryParam() {
         return getRequest().getQueryString();
     }
 
     /**
-     * Describe: Request 请求地址
-     * Param: null
-     * Return string
+     * 获取请求中的请求地址
+     *
+     * @return 请求的URI路径
      */
     public static String getRequestURI() {
         return getRequest().getRequestURI();
     }
 
     /**
-     * Describe: Request 客户端地址
-     * Param: null
-     * Return string
+     * 获取请求中的客户端地址
+     *
+     * @return 请求来源地址
      */
     public static String getRemoteHost() {
         String remoteHost = getRequest().getRemoteHost();
@@ -152,27 +151,28 @@ public class ServletUtils {
     }
 
     /**
-     * Describe: Request 请求方法
-     * Param: null
-     * Return string
+     * 获取请求中的请求方法
+     *
+     * @return 请求方法
      */
     public static String getMethod() {
         return getRequest().getMethod();
     }
 
     /**
-     * Describe: Request 请求头
-     * Param: name
-     * Return string
+     * 获取请求中的请求头
+     *
+     * @param name 请求头参数名
+     * @return 请求头参数内容；可能为null
      */
     public static String getHeader(String name) {
         return getRequest().getHeader(name);
     }
 
     /**
-     * Describe: Request Agent
-     * Param: name
-     * Return string
+     * 获取请求中的Agent
+     *
+     * @return agent代理
      */
     public static String getAgent() {
         return getHeader("User-Agent");
