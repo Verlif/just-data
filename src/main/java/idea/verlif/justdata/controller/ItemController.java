@@ -57,7 +57,7 @@ public class ItemController {
         Map<String, Object> map = RequestUtils.getMapFromRequest(request);
         String body = RequestUtils.getBodyFromRequest(request);
         ResultSet set = sqlExecutor.exec(item, map, body);
-        return new OkResult<>(ResultSetUtils.toList(set));
+        return new OkResult<>(ResultSetUtils.toMapList(set));
     }
 
     @LogIt(message = "", handler = ApiPostLogHandler.class)

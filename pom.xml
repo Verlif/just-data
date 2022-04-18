@@ -46,16 +46,23 @@
             <artifactId>druid-spring-boot-starter</artifactId>
             <version>1.2.8</version>
         </dependency>
+        <!-- XML解析 -->
+        <dependency>
+            <groupId>dom4j</groupId>
+            <artifactId>dom4j</artifactId>
+            <version>1.6.1</version>
+        </dependency>
+        <!-- Commons工具类 -->
+        <dependency>
+            <groupId>commons-codec</groupId>
+            <artifactId>commons-codec</artifactId>
+            <version>1.15</version>
+        </dependency>
 
         <!-- MySQL -->
         <dependency>
             <groupId>mysql</groupId>
             <artifactId>mysql-connector-java</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>dom4j</groupId>
-            <artifactId>dom4j</artifactId>
-            <version>1.6.1</version>
         </dependency>
 
         <!-- 变量解析器 -->
@@ -74,6 +81,12 @@
         <dependency>
             <groupId>com.github.Verlif</groupId>
             <artifactId>logging-spring-boot-starter</artifactId>
+            <version>2.6.6-1.1</version>
+        </dependency>
+        <!-- 定时任务与多线程任务管理 -->
+        <dependency>
+            <groupId>com.github.Verlif</groupId>
+            <artifactId>task-spring-boot-starter</artifactId>
             <version>2.6.6-1.1</version>
         </dependency>
     </dependencies>

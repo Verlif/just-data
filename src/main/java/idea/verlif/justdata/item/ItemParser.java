@@ -116,6 +116,11 @@ public class ItemParser {
                         continue;
                     }
                     item.setSql(sql);
+                    // 获取访问权限
+                    String permissionStr = element.elementText("permission");
+                    if (permissionStr != null) {
+                        item.setPermission(permissionStr);
+                    }
                     // 将操作项添加到列表
                     list.add(item);
                 }

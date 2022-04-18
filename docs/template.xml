@@ -19,7 +19,9 @@
     <!-- 操作项列表，label是必要的属性，表示了子操作项属于哪个数据库 -->
     <items label="test">
         <!-- 操作项信息，name表示了此操作项的名称 -->
-        <item name="getUserById">
+        <item name="获取用户信息">
+            <!-- 访问权限，可选 -->
+            <permision>user</permision>
             <!-- 操作项在访问链接中的API段 -->
             <api>user</api>
             <!-- 操作项的url访问方式，包括GET、POST、PUT、DELETE -->

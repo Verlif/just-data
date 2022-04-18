@@ -27,7 +27,7 @@ public class ResultSetUtils {
         return map;
     }
 
-    public static List<Map<String, Object>> toList(ResultSet set) throws SQLException {
+    public static List<Map<String, Object>> toMapList(ResultSet set) throws SQLException {
         ResultSetMetaData metaData = set.getMetaData();
         int size = metaData.getColumnCount();
         List<Map<String, Object>> list = new ArrayList<>();
@@ -39,5 +39,21 @@ public class ResultSetUtils {
             list.add(map);
         }
         return list;
+    }
+
+    public static List<String> toStringList(ResultSet set) throws SQLException {
+        List<String> list = new ArrayList<>();
+        while (set.next()) {
+            list.add(set.getString(1));
+        }
+        return list;
+    }
+
+    public static String toString(ResultSet set) throws SQLException {
+        if (set.next()) {
+            return set.getString(1);
+        } else {
+            return null;
+        }
     }
 }

@@ -1,7 +1,6 @@
 package idea.verlif.justdata;
 
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
+import idea.verlif.justdata.util.RsaUtils;
 
 /**
  * @author Verlif
@@ -10,12 +9,9 @@ import java.util.regex.Pattern;
  */
 public class Main {
 
-    public static void main(String[] args) {
-        String url = "jdbc:mysql://gz-cynosdbmysql-grp-dxzq6on3.sql.tencentcdb.com:20273/just_station?useSSL=false&useUnicode=true&serverTimezone=Hongkong&characterEncoding=utf8&allowPublicKeyRetrieval=true";
-        Pattern pattern = Pattern.compile("/.*\\?");
-        Matcher matcher = pattern.matcher(url);
-        if (matcher.find()) {
-            System.out.println(matcher.group());
-        }
+    public static void main(String[] args) throws Exception {
+        System.out.println(RsaUtils.encryptByPublicKey(
+                "1",
+                "MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQCVww0Ih4Q9NTP+Nrs2okv4l/QGvpZHn6IsTgPd/HpYGcF8qHvznvqEkqW6Nsr4nRAv4Dw9ET4j1kFwthgYHdeYF8t+dY8aOzvc0xVYk9btkJpCzhGmhauyd9oKvsvSK5tIdWLUflvm6cdrtteKU5gGCxBfW0XkFMabG6AQZCdXvwIDAQAB").replace("/", "%2F").replace("+", "%2B"));
     }
 }

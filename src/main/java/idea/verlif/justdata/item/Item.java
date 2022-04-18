@@ -36,6 +36,11 @@ public class Item {
      */
     private String sql;
 
+    /**
+     * 访问权限
+     */
+    private String permission;
+
     public String getName() {
         return name;
     }
@@ -78,6 +83,14 @@ public class Item {
 
     public void setSql(String sql) {
         this.sql = sql;
+    }
+
+    public String getPermission() {
+        return permission;
+    }
+
+    public void setPermission(String permission) {
+        this.permission = permission;
     }
 
     @Override

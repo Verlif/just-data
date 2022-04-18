@@ -30,7 +30,7 @@ public class RouterController {
     }
 
     @GetMapping("/label/{label}/api")
-    public BaseResult<Router.Info> apiList(@PathVariable String label) {
+    public BaseResult<Router.RouterInfo> apiList(@PathVariable String label) {
         Router router = routeManager.getRouter(label);
         if (router == null) {
             return new FailResult<>(MessagesUtils.message("no.such.label"));

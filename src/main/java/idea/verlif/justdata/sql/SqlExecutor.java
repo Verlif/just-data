@@ -3,6 +3,7 @@ package idea.verlif.justdata.sql;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import idea.verlif.justdata.encrypt.rsa.RsaService;
 import idea.verlif.justdata.item.Item;
 import idea.verlif.justdata.util.DataSourceUtils;
 import idea.verlif.parser.vars.VarsContext;
@@ -35,12 +36,18 @@ public class SqlExecutor {
     @Autowired
     private DataSource dataSource;
 
+    @Autowired
+    private RsaService rsaService;
+
+    private final RsaReplaceHandler rsaReplaceHandler;
+
     private final Map<String, Connection> connectionMap;
     private final ObjectMapper objectMapper;
 
     public SqlExecutor() {
         this.connectionMap = new HashMap<>();
         this.objectMapper = new ObjectMapper();
+        this.rsaReplaceHandler = new RsaReplaceHandler();
     }
 
     /**
@@ -54,16 +61,7 @@ public class SqlExecutor {
      */
     public ResultSet exec(Item item, Map<String, Object> map, String body) throws SQLException, JsonProcessingException {
         // sql变量替换
-        VarsContext paramContext = new VarsContext(item.getSql());
-        paramContext.setAreaTag("#{", "}");
-        String sql = paramContext.build(new ParamReplaceHandler(map));
-        if (body != null && body.length() > 2) {
-            // 将请求内容转换为json
-            JsonNode node = objectMapper.readTree(body);
-            VarsContext bodyContext = new VarsContext(sql);
-            sql = bodyContext.build(new BodyReplaceHandler(node));
-        }
-        LOGGER.debug(sql);
+        String sql = parserSql(item, map, body);
         // 切换数据源
         DataSourceUtils.switchDB(item);
         // 获取数据库连接
@@ -100,6 +98,7 @@ public class SqlExecutor {
      * @throws JsonProcessingException 无法解析body
      */
     private String parserSql(Item item, Map<String, Object> map, String body) throws JsonProcessingException {
+        // 变量替换
         VarsContext paramContext = new VarsContext(item.getSql());
         paramContext.setAreaTag("#{", "}");
         String sql = paramContext.build(new ParamReplaceHandler(map));
@@ -109,6 +108,10 @@ public class SqlExecutor {
             VarsContext bodyContext = new VarsContext(sql);
             sql = bodyContext.build(new BodyReplaceHandler(node));
         }
+        // 解码
+        VarsContext rsaContext = new VarsContext(sql);
+        rsaContext.setAreaTag("@DECRYPT(", ")");
+        sql = rsaContext.build(rsaReplaceHandler);
         LOGGER.debug(sql);
         return sql;
     }
@@ -175,6 +178,15 @@ public class SqlExecutor {
                 return ss[1];
             }
             return s;
+        }
+    }
+
+    private final class RsaReplaceHandler implements VarsHandler {
+
+        @Override
+        public String handle(int i, String s, String s1) {
+            String de = rsaService.decryptByPrivateKey(s1);
+            return (de == null || de.length() == 0) ? s1 : de;
         }
     }
 }

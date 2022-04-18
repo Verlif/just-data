@@ -13,7 +13,7 @@
         <item name="getUserById">
             <api>user</api>
             <method>GET</method>
-            <sql>SELECT * FROM sys_user WHERE id = #{userId}</sql>
+            <sql>SELECT * FROM sys_user WHERE id = @DECRYPT(#{userId})</sql>
         </item>
     </items>
 </info>
