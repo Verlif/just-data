@@ -1,4 +1,4 @@
-package idea.verlif.justdata.route;
+package idea.verlif.justdata.router;
 
 import idea.verlif.justdata.item.Item;
 import idea.verlif.justdata.item.ItemParser;
@@ -38,7 +38,7 @@ public class RouterManager implements ApplicationRunner {
     }
 
     @Override
-    public void run(ApplicationArguments args) throws Exception {
+    public void run(ApplicationArguments args) {
         Map<String, ItemParser> parserMap = parserManager.getParserMap();
         for (ItemParser parser : parserMap.values()) {
             List<Item> list = parser.getItemList();
@@ -56,6 +56,12 @@ public class RouterManager implements ApplicationRunner {
                 }
             }
         }
+    }
+
+    public void reloadRouter() {
+        parserManager.reloadParser();
+        routerMap.clear();
+        run(null);
     }
 
     public void addRouter(Router router) {

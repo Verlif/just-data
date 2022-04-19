@@ -6,10 +6,9 @@ __数据库接口映射服务__
 
 ## 可以做什么
 
-* 只要会SQL，不需要Java知识都可以搭建后台服务。
-* 搭建对数据库的数据映服务。
-* 完善的内置开发接口，方便二次开发。
-* 能搭建基础博客、商城后台服务。
+* 只要会SQL，不需要Java知识都可以搭建Java后台服务。
+* 简单配置即可完成登录、登出与接口权限控制。
+* 多数据源支持。
 
 ## 工作原理
 
@@ -26,7 +25,7 @@ __数据库接口映射服务__
 ## TODO
 
 * [x] 基础操作项加载
-* [ ] 权限控制
+* [x] 权限控制
 * [x] 接口日志
 * [ ] 支持多个数据库
 
@@ -40,20 +39,20 @@ __数据库接口映射服务__
 
 * [x] 支持多个数据源
 * [x] RSA加密支持
-* [ ] 动态更新操作项
-* [ ] api列表，包括了api需要的参数与参数是否必填等信息
+* [x] 动态更新操作项
+* [x] API列表展示更多的信息
+* [ ] 文件上传与下载
 * [ ] 支持外置jar包拓展
 * [ ] 数据库操作项自动生成
 * [ ] 更自由的文本自定义
-* [ ] 内置指令
-* [ ] api指令
+* [ ] 指令API
 
 ## 配置
 
 ### Station配置
 延续了station的配置，包括了以下组件配置：
 
-* api-log
+* [Api-log](https://github.com/Verlif/logging-spring-boot-starter)
 
 ### JustData配置
 
@@ -62,9 +61,34 @@ just-data:
   # 操作项配置
   items:
     # 操作项文件夹读取路径（推荐相对路径）
-    path: src\test\java\resources\envo
+    path: src\test\java\resources\test
   # 接口异常配置
   exception:
     # 异常信息写入文件路径（自动创建）（推荐相对路径）
     file: log\exception.log
+  # 登录配置
+  login:
+    # 是否开启登录
+    enable: true
+    # 获取用户的密钥
+    queryUserKey:
+      # 数据源label
+      label: demo
+      # 使用了与操作项相同的语法，只是这里需要SELECT出用户的密钥。
+      sql: "SELECT user_password FROM sys_user WHERE id = @{id}"
+  # 权限配置
+  permission:
+    # 是否开启权限
+    enable: true
+    # 内置接口需要的权限key（值为空则不需要权限）
+    inner-permission: admin
+    queryPermission:
+      # 权限获取的数据源label
+      label: demo
+      # 权限获取sql语句。这里需要取得登录用户的所有权限key，可以使用${userId}变量来替换登录用户ID
+      sql: "SELECT permission
+        FROM t_permission p
+        LEFT JOIN t_role_permission rp ON rp.permission_id = p.permission_id
+        LEFT JOIN t_user_role ur ON ur.role_id = rp.role_id
+        WHERE ur.user_id = ${userId}"
 ```

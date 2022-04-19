@@ -1,14 +1,18 @@
 package idea.verlif.justdata.user;
 
+import idea.verlif.justdata.security.token.TokenConfig;
 import idea.verlif.justdata.security.token.TokenService;
 import idea.verlif.justdata.user.login.auth.StationAuthentication;
 import idea.verlif.justdata.user.login.exception.CustomException;
 import idea.verlif.justdata.user.login.LoginUser;
 import idea.verlif.justdata.user.permission.PermissionConfig;
+import idea.verlif.justdata.util.ServletUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
+
+import javax.servlet.http.HttpServletRequest;
 
 /**
  * @author Verlif
@@ -20,6 +24,9 @@ public class UserService {
 
     @Autowired
     private TokenService tokenService;
+
+    @Autowired
+    private TokenConfig tokenConfig;
 
     public LoginUser getLoginUser(String token) {
         return tokenService.getUserByToken(token);
@@ -37,6 +44,11 @@ public class UserService {
             SecurityContextHolder.getContext().setAuthentication(authentication);
         }
         return token;
+    }
+
+    public void logout() {
+        String token = tokenService.getTokenFromRequest(ServletUtils.getRequest());
+        tokenService.logout(token);
     }
 
     /**

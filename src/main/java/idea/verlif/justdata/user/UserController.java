@@ -5,7 +5,7 @@ import idea.verlif.justdata.base.result.BaseResult;
 import idea.verlif.justdata.base.result.ResultCode;
 import idea.verlif.justdata.base.result.ext.FailResult;
 import idea.verlif.justdata.base.result.ext.OkResult;
-import idea.verlif.justdata.route.RouterManager;
+import idea.verlif.justdata.router.RouterManager;
 import idea.verlif.justdata.sql.Sql;
 import idea.verlif.justdata.sql.SqlExecutor;
 import idea.verlif.justdata.user.login.BaseUser;
@@ -17,10 +17,7 @@ import idea.verlif.justdata.util.ResultSetUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
 import java.sql.ResultSet;
@@ -91,5 +88,11 @@ public class UserController {
             }
         }
         return new FailResult<>(ResultCode.FAILURE_DISABLED_LOGIN);
+    }
+
+    @PutMapping("/logout")
+    public BaseResult<String> logout() {
+        userService.logout();
+        return OkResult.empty();
     }
 }

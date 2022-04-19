@@ -1,4 +1,4 @@
-package idea.verlif.justdata.route;
+package idea.verlif.justdata.router;
 
 import idea.verlif.justdata.base.constant.MethodConstant;
 import idea.verlif.justdata.item.Item;

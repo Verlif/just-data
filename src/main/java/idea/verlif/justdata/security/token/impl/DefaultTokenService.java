@@ -38,7 +38,11 @@ public class DefaultTokenService implements TokenService {
 
     @Override
     public boolean logout(String token) {
-        return cacheHandler.remove(token);
+        Claims claims = parseToken(token);
+        if (claims == null) {
+            return false;
+        }
+        return cacheHandler.remove(getCacheKey(claims.getSubject()));
     }
 
     @Override

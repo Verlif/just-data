@@ -1,8 +1,0 @@
-<?xml version="1.0" encoding="UTF-8" ?>
-<db name="ai_hub" label="ah">
-    <item name="getUserById">
-        <api>user</api>
-        <method>GET</method>
-        <sql>SELECT * FROM sys_user WHERE user_id = #{userId}</sql>
-    </item>
-</db>

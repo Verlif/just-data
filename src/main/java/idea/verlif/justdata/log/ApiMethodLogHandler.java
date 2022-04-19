@@ -1,5 +1,6 @@
 package idea.verlif.justdata.log;
 
+import idea.verlif.justdata.controller.ApiController;
 import idea.verlif.spring.logging.api.ApiLogHandler;
 import idea.verlif.spring.logging.api.LogIt;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -9,7 +10,7 @@ import java.lang.reflect.Parameter;
 import java.util.Date;
 
 /**
- * 与{@link idea.verlif.justdata.controller.ItemController ItemController}强绑定的日志处理器。<br/>
+ * 与{@link ApiController ItemController}强绑定的日志处理器。<br/>
  * 当ItemController方法改变时，此处理类可能会失效。
  *
  * @author Verlif

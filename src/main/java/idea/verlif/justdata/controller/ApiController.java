@@ -10,8 +10,8 @@ import idea.verlif.justdata.log.api.ApiDeleteLogHandler;
 import idea.verlif.justdata.log.api.ApiGetLogHandler;
 import idea.verlif.justdata.log.api.ApiPostLogHandler;
 import idea.verlif.justdata.log.api.ApiPutLogHandler;
-import idea.verlif.justdata.route.Router;
-import idea.verlif.justdata.route.RouterManager;
+import idea.verlif.justdata.router.Router;
+import idea.verlif.justdata.router.RouterManager;
 import idea.verlif.justdata.sql.SqlExecutor;
 import idea.verlif.justdata.user.permission.PermissionCheck;
 import idea.verlif.justdata.util.RequestUtils;
@@ -33,7 +33,7 @@ import java.util.Map;
  */
 @RestController
 @RequestMapping("/api")
-public class ItemController {
+public class ApiController {
 
     @Autowired
     private RouterManager routerManager;

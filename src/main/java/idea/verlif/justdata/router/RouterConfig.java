@@ -1,4 +1,4 @@
-package idea.verlif.justdata.route;
+package idea.verlif.justdata.router;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Configuration;

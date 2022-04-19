@@ -10,13 +10,13 @@
         </db>
     </dbs>
     <items label="demo">
-        <item name="getUserById">
+        <item name="获取其他用户信息">
             <api>user</api>
             <method>GET</method>
             <permission>admin</permission>
             <sql>SELECT * FROM t_user WHERE id = @DECRYPT(#{userId})</sql>
         </item>
-        <item name="getLoginUser">
+        <item name="获取个人信息">
             <api>userself</api>
             <method>GET</method>
             <permission>user</permission>

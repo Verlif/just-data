@@ -39,7 +39,16 @@ public class ItemParserManager {
                 ItemParser parser = new ItemParser(file);
                 parserMap.put(file.getPath(), parser);
             }
+        } else if (dir.isFile()) {
+            ItemParser parser = new ItemParser(dir);
+            parserMap.put(dir.getPath(), parser);
+            LOGGER.debug("Found xml file 1 : [" + dir.getPath() + "]");
         }
+    }
+
+    public void reloadParser() {
+        parserMap.clear();
+        loadParser(itemConfig.getPath());
     }
 
     public Map<String, ItemParser> getParserMap() {
