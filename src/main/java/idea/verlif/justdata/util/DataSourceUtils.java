@@ -18,4 +18,13 @@ public class DataSourceUtils {
     public static void switchDB(Item item) {
         DataSourceContextHolder.setDataSource(item.getLabel());
     }
+
+    /**
+     * 切换数据源
+     *
+     * @param label 数据库label
+     */
+    public static void switchDB(String label) {
+        DataSourceContextHolder.setDataSource(label);
+    }
 }

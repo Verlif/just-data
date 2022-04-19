@@ -12,12 +12,12 @@ import java.util.List;
  * @date 2022/4/14 17:01
  */
 @Configuration
-@ConfigurationProperties(prefix = "route")
-public class RouteConfig {
+@ConfigurationProperties(prefix = "just-data.router")
+public class RouterConfig {
 
     private final BlockedList blockedList;
 
-    public RouteConfig() {
+    public RouterConfig() {
         blockedList = new BlockedList();
     }
 

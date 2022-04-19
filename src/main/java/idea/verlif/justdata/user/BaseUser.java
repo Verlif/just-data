@@ -26,4 +26,12 @@ public class BaseUser {
     public void setKey(String key) {
         this.key = key;
     }
+
+    @Override
+    public String toString() {
+        return "{" +
+                "\"id\":" + ((id instanceof Number) ? id : "\"" + id + "\"") +
+                ", \"key\":\"" + key + "\"" +
+                '}';
+    }
 }

@@ -1,7 +1,10 @@
 package idea.verlif.justdata.user;
 
-import idea.verlif.justdata.cache.CacheHandler;
+import idea.verlif.justdata.security.token.TokenService;
+import idea.verlif.justdata.user.exception.CustomException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 /**
@@ -12,9 +15,41 @@ import org.springframework.stereotype.Service;
 @Service
 public class UserService {
 
-    private static final String HEADER_TOKEN = "auth";
-
     @Autowired
-    private CacheHandler cacheHandler;
+    private TokenService tokenService;
+
+    public LoginUser getLoginUser(String token) {
+        return tokenService.getUserByToken(token);
+    }
+
+    public void refreshLoginUser(LoginUser user) {
+        tokenService.refreshUser(user);
+    }
+
+    public String login(LoginUser user) {
+        return tokenService.loginUser(user);
+    }
+
+    /**
+     * 获取用户
+     **/
+    public static <T extends LoginUser> T getLoginUser() {
+        try {
+            Authentication authentication = getAuthentication();
+            if (authentication == null) {
+                return null;
+            }
+            return (T) authentication.getPrincipal();
+        } catch (Exception e) {
+            throw new CustomException();
+        }
+    }
+
+    /**
+     * 获取Authentication
+     */
+    public static Authentication getAuthentication() {
+        return SecurityContextHolder.getContext().getAuthentication();
+    }
 
 }

@@ -1,6 +1,6 @@
 package idea.verlif.justdata.log.api;
 
-import idea.verlif.justdata.constant.MethodConstant;
+import idea.verlif.justdata.base.constant.MethodConstant;
 import idea.verlif.justdata.log.ApiMethodLogHandler;
 import org.springframework.stereotype.Component;
 

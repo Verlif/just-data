@@ -10,7 +10,6 @@ import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.stereotype.Component;
 
-import java.io.File;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -22,19 +21,19 @@ import java.util.Set;
  * @date 2022/4/8 11:35
  */
 @Component
-public class RouteManager implements ApplicationRunner {
+public class RouterManager implements ApplicationRunner {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(RouteManager.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(RouterManager.class);
 
     @Autowired
-    private RouteConfig routeConfig;
+    private RouterConfig routerConfig;
 
     @Autowired
     private ItemParserManager parserManager;
 
     private final Map<String, Router> routerMap;
 
-    public RouteManager() {
+    public RouterManager() {
         routerMap = new HashMap<>();
     }
 
@@ -44,14 +43,14 @@ public class RouteManager implements ApplicationRunner {
         for (ItemParser parser : parserMap.values()) {
             List<Item> list = parser.getItemList();
             String label = parser.getLabel();
-            if (routeConfig.isAllowLabel(label)) {
+            if (routerConfig.isAllowLabel(label)) {
                 Router router = getRouter(label);
                 if (router == null) {
                     router = new Router(label);
                     addRouter(router);
                 }
                 for (Item item : list) {
-                    if (routeConfig.isAllowApi(item.getApi())) {
+                    if (routerConfig.isAllowApi(item.getApi())) {
                         router.addItem(item);
                     }
                 }

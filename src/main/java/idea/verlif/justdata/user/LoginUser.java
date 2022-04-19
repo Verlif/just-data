@@ -1,6 +1,9 @@
 package idea.verlif.justdata.user;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import java.util.Collection;
+import java.util.Date;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -13,13 +16,54 @@ import java.util.Set;
  */
 public class LoginUser {
 
+    /**
+     * 登录Code
+     */
+    protected String code = "*";
+
+    /**
+     * 登录时间
+     */
+    private Date loginTime;
+
+    /**
+     * 用户ID
+     */
     private final Object id;
 
+    /**
+     * 用户权限
+     */
     private final Set<String> permissions;
 
     public LoginUser(Object id) {
         this.id = id;
         this.permissions = new HashSet<>();
+    }
+
+    /**
+     * 用户登录Token
+     */
+    @JsonIgnore
+    public String getToken() {
+        return id + ":" + code;
+    }
+
+
+    public String getCode() {
+        return code;
+    }
+
+    public void setCode(String code) {
+        this.code = code;
+    }
+
+    public Date getLoginTime() {
+        return loginTime;
+    }
+
+    public void setLoginTime(Date loginTime) {
+        this.loginTime = loginTime;
     }
 
     /**

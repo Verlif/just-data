@@ -1,4 +1,4 @@
-package idea.verlif.justdata.constant;
+package idea.verlif.justdata.base.constant;
 
 /**
  * @author Verlif

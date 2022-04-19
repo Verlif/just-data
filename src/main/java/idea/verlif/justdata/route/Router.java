@@ -1,6 +1,6 @@
 package idea.verlif.justdata.route;
 
-import idea.verlif.justdata.constant.MethodConstant;
+import idea.verlif.justdata.base.constant.MethodConstant;
 import idea.verlif.justdata.item.Item;
 import idea.verlif.parser.vars.VarsContext;
 

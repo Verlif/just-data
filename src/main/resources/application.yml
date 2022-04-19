@@ -30,6 +30,11 @@ just-data:
     path: src\test\java\resources\envo
   exception:
     file: log\exception.log
+  login:
+    enable: true
+    queryUserKey:
+      label: demo
+      sql: "SELECT user_password FROM sys_user WHERE id = @{id}"
 
 station:
   api-log:

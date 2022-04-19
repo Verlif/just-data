@@ -34,7 +34,7 @@ public enum ResultCode {
      */
     FAILURE_PARAMETER_LACK(511, MessagesUtils.message("result.fail.parameter.lack")),
     /**
-     * 文件上传失败
+     * 文件操作失败
      */
     FAILURE_FILE(520, MessagesUtils.message("result.fail.file")),
     /**
@@ -42,7 +42,7 @@ public enum ResultCode {
      */
     FAILURE_FILE_UPLOAD(521, MessagesUtils.message("result.fail.file.upload")),
     /**
-     * 文件上传失败
+     * 文件下载失败
      */
     FAILURE_FILE_DOWNLOAD(522, MessagesUtils.message("result.fail.file.download")),
     /**
@@ -72,15 +72,31 @@ public enum ResultCode {
     /**
      * 添加失败
      */
-    FAILURE_INSERT(550, MessagesUtils.message("request.insert")),
+    FAILURE_INSERT(550, MessagesUtils.message("fail.insert")),
     /**
      * 更新失败
      */
-    FAILURE_UPDATE(560, MessagesUtils.message("request.update")),
+    FAILURE_UPDATE(560, MessagesUtils.message("fail.update")),
     /**
      * 删除失败
      */
-    FAILURE_DELETE(570, MessagesUtils.message("request.delete")),
+    FAILURE_DELETE(570, MessagesUtils.message("fail.delete")),
+    /**
+     * 未找到标签
+     */
+    FAILURE_NO_LABEL(610, MessagesUtils.message("request.fail.no.label")),
+    /**
+     * 未开启登录
+     */
+    FAILURE_DISABLED_LOGIN(610, MessagesUtils.message("disabled.login")),
+    /**
+     * 未找到API
+     */
+    FAILURE_NO_API(620, MessagesUtils.message("request.fail.no.api")),
+    /**
+     * 未找到API方法
+     */
+    FAILURE_NO_API_METHOD(630, MessagesUtils.message("request.fail.no.api.method")),
     /**
      * 服务器错误
      */

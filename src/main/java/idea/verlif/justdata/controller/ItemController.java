@@ -2,6 +2,7 @@ package idea.verlif.justdata.controller;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import idea.verlif.justdata.base.result.BaseResult;
+import idea.verlif.justdata.base.result.ResultCode;
 import idea.verlif.justdata.base.result.ext.FailResult;
 import idea.verlif.justdata.base.result.ext.OkResult;
 import idea.verlif.justdata.item.Item;
@@ -9,10 +10,9 @@ import idea.verlif.justdata.log.api.ApiDeleteLogHandler;
 import idea.verlif.justdata.log.api.ApiGetLogHandler;
 import idea.verlif.justdata.log.api.ApiPostLogHandler;
 import idea.verlif.justdata.log.api.ApiPutLogHandler;
-import idea.verlif.justdata.route.RouteManager;
+import idea.verlif.justdata.route.RouterManager;
 import idea.verlif.justdata.route.Router;
 import idea.verlif.justdata.sql.SqlExecutor;
-import idea.verlif.justdata.util.MessagesUtils;
 import idea.verlif.justdata.util.RequestUtils;
 import idea.verlif.justdata.util.ResultSetUtils;
 import idea.verlif.spring.logging.api.LogIt;
@@ -35,7 +35,7 @@ import java.util.Map;
 public class ItemController {
 
     @Autowired
-    private RouteManager routeManager;
+    private RouterManager routerManager;
 
     @Autowired
     private SqlExecutor sqlExecutor;
@@ -46,13 +46,13 @@ public class ItemController {
             @PathVariable String label,
             @PathVariable String api,
             HttpServletRequest request) throws SQLException, JsonProcessingException {
-        Router router = routeManager.getRouter(label);
+        Router router = routerManager.getRouter(label);
         if (router == null) {
-            return new FailResult<>(MessagesUtils.message("no.such.label"));
+            return new FailResult<>(ResultCode.FAILURE_NO_LABEL);
         }
         Item item = router.get(api);
         if (item == null) {
-            return new FailResult<>(MessagesUtils.message("no.such.api"));
+            return new FailResult<>(ResultCode.FAILURE_NO_API);
         }
         Map<String, Object> map = RequestUtils.getMapFromRequest(request);
         String body = RequestUtils.getBodyFromRequest(request);
@@ -67,13 +67,13 @@ public class ItemController {
             @PathVariable String api,
             HttpServletRequest request
     ) throws SQLException, JsonProcessingException {
-        Router router = routeManager.getRouter(label);
+        Router router = routerManager.getRouter(label);
         if (router == null) {
-            return new FailResult<>(MessagesUtils.message("no.such.label"));
+            return new FailResult<>(ResultCode.FAILURE_NO_LABEL);
         }
         Item item = router.post(api);
         if (item == null) {
-            return new FailResult<>(MessagesUtils.message("no.such.api"));
+            return new FailResult<>(ResultCode.FAILURE_NO_API);
         }
         Map<String, Object> map = RequestUtils.getMapFromRequest(request);
         String body = RequestUtils.getBodyFromRequest(request);
@@ -91,13 +91,13 @@ public class ItemController {
             @PathVariable String api,
             HttpServletRequest request
     ) throws SQLException, JsonProcessingException {
-        Router router = routeManager.getRouter(label);
+        Router router = routerManager.getRouter(label);
         if (router == null) {
-            return new FailResult<>(MessagesUtils.message("no.such.label"));
+            return new FailResult<>(ResultCode.FAILURE_NO_LABEL);
         }
-        Item item = router.put(api);
+        Item item = router.post(api);
         if (item == null) {
-            return new FailResult<>(MessagesUtils.message("no.such.api"));
+            return new FailResult<>(ResultCode.FAILURE_NO_API);
         }
         Map<String, Object> map = RequestUtils.getMapFromRequest(request);
         String body = RequestUtils.getBodyFromRequest(request);
@@ -115,13 +115,13 @@ public class ItemController {
             @PathVariable String api,
             HttpServletRequest request
     ) throws SQLException, JsonProcessingException {
-        Router router = routeManager.getRouter(label);
+        Router router = routerManager.getRouter(label);
         if (router == null) {
-            return new FailResult<>(MessagesUtils.message("no.such.label"));
+            return new FailResult<>(ResultCode.FAILURE_NO_LABEL);
         }
-        Item item = router.delete(api);
+        Item item = router.post(api);
         if (item == null) {
-            return new FailResult<>(MessagesUtils.message("no.such.api"));
+            return new FailResult<>(ResultCode.FAILURE_NO_API);
         }
         Map<String, Object> map = RequestUtils.getMapFromRequest(request);
         String body = RequestUtils.getBodyFromRequest(request);

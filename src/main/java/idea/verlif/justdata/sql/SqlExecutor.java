@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import idea.verlif.justdata.encrypt.rsa.RsaService;
 import idea.verlif.justdata.item.Item;
+import idea.verlif.justdata.macro.GlobalMacroManager;
 import idea.verlif.justdata.util.DataSourceUtils;
 import idea.verlif.parser.vars.VarsContext;
 import idea.verlif.parser.vars.VarsHandler;
@@ -39,7 +40,11 @@ public class SqlExecutor {
     @Autowired
     private RsaService rsaService;
 
+    @Autowired
+    private GlobalMacroManager macroManager;
+
     private final RsaReplaceHandler rsaReplaceHandler;
+    private final MacroReplaceHandler macroReplaceHandler;
 
     private final Map<String, Connection> connectionMap;
     private final ObjectMapper objectMapper;
@@ -48,6 +53,7 @@ public class SqlExecutor {
         this.connectionMap = new HashMap<>();
         this.objectMapper = new ObjectMapper();
         this.rsaReplaceHandler = new RsaReplaceHandler();
+        this.macroReplaceHandler = new MacroReplaceHandler();
     }
 
     /**
@@ -61,11 +67,22 @@ public class SqlExecutor {
      */
     public ResultSet exec(Item item, Map<String, Object> map, String body) throws SQLException, JsonProcessingException {
         // sql变量替换
-        String sql = parserSql(item, map, body);
+        String sql = parserSql(item.getSql(), map, body);
         // 切换数据源
         DataSourceUtils.switchDB(item);
         // 获取数据库连接
         Connection connection = getConnect(item);
+        PreparedStatement statement = connection.prepareStatement(sql);
+        return statement.executeQuery();
+    }
+
+    public ResultSet exec(String label, String sql, Map<String, Object> map, String body) throws SQLException, JsonProcessingException {
+        // sql变量替换
+        sql = parserSql(sql, map, body);
+        // 切换数据源
+        DataSourceUtils.switchDB(label);
+        // 获取数据库连接
+        Connection connection = getConnect(label);
         PreparedStatement statement = connection.prepareStatement(sql);
         return statement.executeQuery();
     }
@@ -81,7 +98,7 @@ public class SqlExecutor {
      */
     public boolean update(Item item, Map<String, Object> map, String body) throws SQLException, JsonProcessingException {
         // sql变量替换
-        String sql = parserSql(item, map, body);
+        String sql = parserSql(item.getSql(), map, body);
         // 切换数据源
         DataSourceUtils.switchDB(item);
         // 获取数据库连接
@@ -90,24 +107,27 @@ public class SqlExecutor {
     }
 
     /**
-     *
-     * @param item 操作项
-     * @param map  操作项参数
+     * @param sql  sql
+     * @param map  sql参数
      * @param body 请求内容
      * @return 解析后的sql
      * @throws JsonProcessingException 无法解析body
      */
-    private String parserSql(Item item, Map<String, Object> map, String body) throws JsonProcessingException {
+    private String parserSql(String sql, Map<String, Object> map, String body) throws JsonProcessingException {
         // 变量替换
-        VarsContext paramContext = new VarsContext(item.getSql());
+        VarsContext paramContext = new VarsContext(sql);
         paramContext.setAreaTag("#{", "}");
-        String sql = paramContext.build(new ParamReplaceHandler(map));
+        sql = paramContext.build(new ParamReplaceHandler(map));
         if (body != null && body.length() > 2) {
             // 将请求内容转换为json
             JsonNode node = objectMapper.readTree(body);
             VarsContext bodyContext = new VarsContext(sql);
             sql = bodyContext.build(new BodyReplaceHandler(node));
         }
+        // 替换全局变量
+        VarsContext macroContext = new VarsContext(sql);
+        macroContext.setAreaTag("${", "}");
+        sql = macroContext.build(macroReplaceHandler);
         // 解码
         VarsContext rsaContext = new VarsContext(sql);
         rsaContext.setAreaTag("@DECRYPT(", ")");
@@ -117,10 +137,14 @@ public class SqlExecutor {
     }
 
     private Connection getConnect(Item item) throws SQLException {
-        Connection connection = connectionMap.get(item.getLabel());
+        return getConnect(item.getLabel());
+    }
+
+    private Connection getConnect(String label) throws SQLException {
+        Connection connection = connectionMap.get(label);
         if (connection == null) {
             connection = dataSource.getConnection();
-            connectionMap.put(item.getLabel(), connection);
+            connectionMap.put(label, connection);
         }
         return connection;
     }
@@ -187,6 +211,15 @@ public class SqlExecutor {
         public String handle(int i, String s, String s1) {
             String de = rsaService.decryptByPrivateKey(s1);
             return (de == null || de.length() == 0) ? s1 : de;
+        }
+    }
+
+    private final class MacroReplaceHandler implements VarsHandler {
+
+        @Override
+        public String handle(int i, String s, String s1) {
+            String val = macroManager.get(s1);
+            return val == null ? s1 : val;
         }
     }
 }
