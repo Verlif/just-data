@@ -1,9 +1,8 @@
-package idea.verlif.justdata.user.auth;
+package idea.verlif.justdata.user.login.auth;
 
-import idea.verlif.justdata.base.result.BaseResult;
 import idea.verlif.justdata.base.result.ResultCode;
 import idea.verlif.justdata.base.result.ext.FailResult;
-import idea.verlif.justdata.user.LoginUser;
+import idea.verlif.justdata.user.login.LoginUser;
 import idea.verlif.justdata.user.UserService;
 import idea.verlif.justdata.util.ServletUtils;
 import org.springframework.security.core.AuthenticationException;

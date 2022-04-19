@@ -1,6 +1,6 @@
 package idea.verlif.justdata.security;
 
-import idea.verlif.justdata.user.auth.StationAttestation;
+import idea.verlif.justdata.user.login.auth.StationAttestation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

@@ -13,12 +13,14 @@
         <item name="getUserById">
             <api>user</api>
             <method>GET</method>
-            <sql>SELECT * FROM sys_user WHERE id = @DECRYPT(#{userId})</sql>
+            <permission>admin</permission>
+            <sql>SELECT * FROM t_user WHERE id = @DECRYPT(#{userId})</sql>
         </item>
         <item name="getLoginUser">
             <api>userself</api>
             <method>GET</method>
-            <sql>SELECT * FROM sys_user WHERE id = ${userId}</sql>
+            <permission>user</permission>
+            <sql>SELECT * FROM t_user WHERE id = ${userId}</sql>
         </item>
     </items>
 </info>

@@ -1,5 +1,6 @@
-package idea.verlif.justdata.user;
+package idea.verlif.justdata.user.login;
 
+import idea.verlif.justdata.sql.Sql;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Configuration;
 
@@ -42,25 +43,4 @@ public class LoginConfig {
         this.queryUserKey = queryUserKey;
     }
 
-    public static final class Sql {
-
-        private String label;
-        private String sql;
-
-        public String getLabel() {
-            return label;
-        }
-
-        public void setLabel(String label) {
-            this.label = label;
-        }
-
-        public String getSql() {
-            return sql;
-        }
-
-        public void setSql(String sql) {
-            this.sql = sql;
-        }
-    }
 }

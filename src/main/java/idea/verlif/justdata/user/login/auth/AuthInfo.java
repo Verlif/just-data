@@ -1,4 +1,4 @@
-package idea.verlif.justdata.user.auth;
+package idea.verlif.justdata.user.login.auth;
 
 /**
  * 认证信息 <br/>

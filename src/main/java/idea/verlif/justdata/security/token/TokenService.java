@@ -1,10 +1,9 @@
 package idea.verlif.justdata.security.token;
 
-import idea.verlif.justdata.user.LoginUser;
+import idea.verlif.justdata.user.login.LoginUser;
 import io.jsonwebtoken.Claims;
 
 import javax.servlet.http.HttpServletRequest;
-import java.util.Set;
 
 /**
  * Token服务

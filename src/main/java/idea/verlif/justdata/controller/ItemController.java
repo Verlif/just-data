@@ -10,9 +10,10 @@ import idea.verlif.justdata.log.api.ApiDeleteLogHandler;
 import idea.verlif.justdata.log.api.ApiGetLogHandler;
 import idea.verlif.justdata.log.api.ApiPostLogHandler;
 import idea.verlif.justdata.log.api.ApiPutLogHandler;
-import idea.verlif.justdata.route.RouterManager;
 import idea.verlif.justdata.route.Router;
+import idea.verlif.justdata.route.RouterManager;
 import idea.verlif.justdata.sql.SqlExecutor;
+import idea.verlif.justdata.user.permission.PermissionCheck;
 import idea.verlif.justdata.util.RequestUtils;
 import idea.verlif.justdata.util.ResultSetUtils;
 import idea.verlif.spring.logging.api.LogIt;
@@ -40,6 +41,9 @@ public class ItemController {
     @Autowired
     private SqlExecutor sqlExecutor;
 
+    @Autowired
+    private PermissionCheck permissionCheck;
+
     @LogIt(message = "", handler = ApiGetLogHandler.class)
     @GetMapping("/{label}/{api}")
     public BaseResult<List<Map<String, Object>>> get(
@@ -54,10 +58,14 @@ public class ItemController {
         if (item == null) {
             return new FailResult<>(ResultCode.FAILURE_NO_API);
         }
-        Map<String, Object> map = RequestUtils.getMapFromRequest(request);
-        String body = RequestUtils.getBodyFromRequest(request);
-        ResultSet set = sqlExecutor.exec(item, map, body);
-        return new OkResult<>(ResultSetUtils.toMapList(set));
+        if (permissionCheck.hasPermission(item.getPermission())) {
+            Map<String, Object> map = RequestUtils.getMapFromRequest(request);
+            String body = RequestUtils.getBodyFromRequest(request);
+            ResultSet set = sqlExecutor.exec(item, map, body);
+            return new OkResult<>(ResultSetUtils.toMapList(set));
+        } else {
+            return new FailResult<>(ResultCode.FAILURE_UNAVAILABLE);
+        }
     }
 
     @LogIt(message = "", handler = ApiPostLogHandler.class)
@@ -75,12 +83,16 @@ public class ItemController {
         if (item == null) {
             return new FailResult<>(ResultCode.FAILURE_NO_API);
         }
-        Map<String, Object> map = RequestUtils.getMapFromRequest(request);
-        String body = RequestUtils.getBodyFromRequest(request);
-        if (sqlExecutor.update(item, map, body)) {
-            return OkResult.empty();
+        if (permissionCheck.hasPermission(item.getPermission())) {
+            Map<String, Object> map = RequestUtils.getMapFromRequest(request);
+            String body = RequestUtils.getBodyFromRequest(request);
+            if (sqlExecutor.update(item, map, body)) {
+                return OkResult.empty();
+            } else {
+                return FailResult.empty();
+            }
         } else {
-            return FailResult.empty();
+            return new FailResult<>(ResultCode.FAILURE_UNAVAILABLE);
         }
     }
 
@@ -99,12 +111,16 @@ public class ItemController {
         if (item == null) {
             return new FailResult<>(ResultCode.FAILURE_NO_API);
         }
-        Map<String, Object> map = RequestUtils.getMapFromRequest(request);
-        String body = RequestUtils.getBodyFromRequest(request);
-        if (sqlExecutor.update(item, map, body)) {
-            return OkResult.empty();
+        if (permissionCheck.hasPermission(item.getPermission())) {
+            Map<String, Object> map = RequestUtils.getMapFromRequest(request);
+            String body = RequestUtils.getBodyFromRequest(request);
+            if (sqlExecutor.update(item, map, body)) {
+                return OkResult.empty();
+            } else {
+                return FailResult.empty();
+            }
         } else {
-            return FailResult.empty();
+            return new FailResult<>(ResultCode.FAILURE_UNAVAILABLE);
         }
     }
 
@@ -123,12 +139,16 @@ public class ItemController {
         if (item == null) {
             return new FailResult<>(ResultCode.FAILURE_NO_API);
         }
-        Map<String, Object> map = RequestUtils.getMapFromRequest(request);
-        String body = RequestUtils.getBodyFromRequest(request);
-        if (sqlExecutor.update(item, map, body)) {
-            return OkResult.empty();
+        if (permissionCheck.hasPermission(item.getPermission())) {
+            Map<String, Object> map = RequestUtils.getMapFromRequest(request);
+            String body = RequestUtils.getBodyFromRequest(request);
+            if (sqlExecutor.update(item, map, body)) {
+                return OkResult.empty();
+            } else {
+                return FailResult.empty();
+            }
         } else {
-            return FailResult.empty();
+            return new FailResult<>(ResultCode.FAILURE_UNAVAILABLE);
         }
     }
 

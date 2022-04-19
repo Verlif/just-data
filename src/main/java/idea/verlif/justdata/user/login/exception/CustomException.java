@@ -1,4 +1,4 @@
-package idea.verlif.justdata.user.exception;
+package idea.verlif.justdata.user.login.exception;
 
 /**
  * @author Verlif

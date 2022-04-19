@@ -1,4 +1,4 @@
-package idea.verlif.justdata.user;
+package idea.verlif.justdata.user.login;
 
 /**
  * @author Verlif

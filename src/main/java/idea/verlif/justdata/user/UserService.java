@@ -1,7 +1,10 @@
 package idea.verlif.justdata.user;
 
 import idea.verlif.justdata.security.token.TokenService;
-import idea.verlif.justdata.user.exception.CustomException;
+import idea.verlif.justdata.user.login.auth.StationAuthentication;
+import idea.verlif.justdata.user.login.exception.CustomException;
+import idea.verlif.justdata.user.login.LoginUser;
+import idea.verlif.justdata.user.permission.PermissionConfig;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -27,7 +30,13 @@ public class UserService {
     }
 
     public String login(LoginUser user) {
-        return tokenService.loginUser(user);
+        String token = tokenService.loginUser(user);
+        if (token != null) {
+            StationAuthentication authentication = new StationAuthentication();
+            authentication.setDetails(user);
+            SecurityContextHolder.getContext().setAuthentication(authentication);
+        }
+        return token;
     }
 
     /**
@@ -37,11 +46,26 @@ public class UserService {
         try {
             Authentication authentication = getAuthentication();
             if (authentication == null) {
-                return null;
+                throw new CustomException();
             }
             return (T) authentication.getPrincipal();
         } catch (Exception e) {
             throw new CustomException();
+        }
+    }
+
+    /**
+     * 当前是否有用户登录
+     */
+    public static boolean isOnline() {
+        try {
+            Authentication authentication = getAuthentication();
+            if (authentication == null) {
+                return false;
+            }
+            return authentication.getPrincipal() != null;
+        } catch (Exception e) {
+            return false;
         }
     }
 

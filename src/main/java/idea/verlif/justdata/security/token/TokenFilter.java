@@ -2,8 +2,8 @@ package idea.verlif.justdata.security.token;
 
 import idea.verlif.justdata.base.result.BaseResult;
 import idea.verlif.justdata.base.result.ResultCode;
-import idea.verlif.justdata.user.LoginUser;
-import idea.verlif.justdata.user.auth.StationAuthentication;
+import idea.verlif.justdata.user.login.LoginUser;
+import idea.verlif.justdata.user.login.auth.StationAuthentication;
 import idea.verlif.justdata.util.ServletUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.context.SecurityContextHolder;

@@ -34,7 +34,17 @@ just-data:
     enable: true
     queryUserKey:
       label: demo
-      sql: "SELECT user_password FROM sys_user WHERE id = @{id}"
+      sql: "SELECT user_password FROM t_user WHERE id = @{id}"
+  permission:
+    enable: true
+    inner-permission: admin
+    queryPermission:
+      label: demo
+      sql: "SELECT permission
+        FROM t_permission p
+        LEFT JOIN t_role_permission rp ON rp.permission_id = p.permission_id
+        LEFT JOIN t_user_role ur ON ur.role_id = rp.role_id
+        WHERE ur.user_id = ${userId}"
 
 station:
   api-log:

@@ -1,11 +1,8 @@
 package idea.verlif.justdata.macro;
 
-import idea.verlif.justdata.user.LoginUser;
 import idea.verlif.justdata.user.UserService;
-import org.apache.catalina.security.SecurityUtil;
 import org.springframework.stereotype.Component;
 
-import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -26,7 +23,13 @@ public class GlobalMacroManager {
     }
 
     private void init() {
-        macroMap.put("userId", () -> UserService.getLoginUser().getId().toString());
+        macroMap.put("userId", () -> {
+            if (UserService.isOnline()) {
+                return UserService.getLoginUser().getId().toString();
+            } else {
+                return "";
+            }
+        });
     }
 
     public String get(String key) {
