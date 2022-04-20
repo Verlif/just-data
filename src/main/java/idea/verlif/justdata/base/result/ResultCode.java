@@ -70,25 +70,9 @@ public enum ResultCode {
      */
     FAILURE_DATA_MISSING(540, MessagesUtils.message("request.data.missing")),
     /**
-     * 添加失败
-     */
-    FAILURE_INSERT(550, MessagesUtils.message("fail.insert")),
-    /**
-     * 更新失败
-     */
-    FAILURE_UPDATE(560, MessagesUtils.message("fail.update")),
-    /**
-     * 删除失败
-     */
-    FAILURE_DELETE(570, MessagesUtils.message("fail.delete")),
-    /**
      * 未找到标签
      */
     FAILURE_NO_LABEL(610, MessagesUtils.message("request.fail.no.label")),
-    /**
-     * 未开启登录
-     */
-    FAILURE_DISABLED_LOGIN(610, MessagesUtils.message("disabled.login")),
     /**
      * 未找到API
      */
@@ -97,6 +81,10 @@ public enum ResultCode {
      * 未找到API方法
      */
     FAILURE_NO_API_METHOD(630, MessagesUtils.message("request.fail.no.api.method")),
+    /**
+     * 未开启登录
+     */
+    FAILURE_DISABLED_LOGIN(640, MessagesUtils.message("disabled.login")),
     /**
      * 服务器错误
      */

@@ -1,7 +1,6 @@
 package idea.verlif.justdata.exception;
 
 import idea.verlif.justdata.base.result.ext.FailResult;
-import idea.verlif.justdata.util.MessagesUtils;
 import idea.verlif.spring.exception.ExceptionHolder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -9,6 +8,7 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Configuration;
 
 import java.io.*;
+import java.util.Locale;
 import java.util.UUID;
 
 /**
@@ -22,24 +22,66 @@ public class ExceptionLogManager implements ExceptionHolder<Throwable> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ExceptionLogManager.class);
 
+    private static final String TYPE_SPLIT = ",";
+
+    private int output = 0;
+
     private File file = new File("exception.log");
 
     public synchronized String logThrowable(Throwable throwable) {
-        String code = genExceptionCode(throwable);
-        try (FileOutputStream fos = new FileOutputStream(file, true);
-             PrintWriter writer = new PrintWriter(fos)) {
-            writer.append(code).append(":\n");
-            writer.flush();
-            throwable.printStackTrace(writer);
-            return code;
-        } catch (IOException e) {
-            e.printStackTrace();
-            return "-1";
+        if ((output & OutputType.ON_CONSOLE) > 0) {
+            throwable.printStackTrace();
         }
+        if ((output & OutputType.ON_FILE) > 0) {
+            String code = genExceptionCode(throwable);
+            try (FileOutputStream fos = new FileOutputStream(file, true);
+                 PrintWriter writer = new PrintWriter(fos)) {
+                writer.append(code).append(":\n");
+                writer.flush();
+                throwable.printStackTrace(writer);
+                return code;
+            } catch (IOException e) {
+                e.printStackTrace();
+                return "-1";
+            }
+        }
+        return null;
     }
 
     private String genExceptionCode(Throwable throwable) {
         return throwable.getClass().getSimpleName() + "-" + UUID.randomUUID();
+    }
+
+    public int getOutput() {
+        return output;
+    }
+
+    public void addType(int type) {
+        this.output = type;
+    }
+
+    public void addType(String type) {
+        switch (type.trim().toUpperCase(Locale.ROOT)) {
+            case "CLIENT":
+                this.output = this.output | OutputType.ON_CLIENT;
+                break;
+            case "FILE":
+                this.output = this.output | OutputType.ON_FILE;
+                break;
+            default:
+                this.output = this.output | OutputType.ON_CONSOLE;
+        }
+    }
+
+    public void setOutput(String output) {
+        if (output == null || output.length() == 0) {
+            this.output = OutputType.ON_CONSOLE;
+        } else {
+            String[] ss = output.split(TYPE_SPLIT);
+            for (String s : ss) {
+                addType(s);
+            }
+        }
     }
 
     public String getFile() {
@@ -71,6 +113,18 @@ public class ExceptionLogManager implements ExceptionHolder<Throwable> {
     @Override
     public Object handler(Throwable e) {
         String code = logThrowable(e);
-        return new FailResult<String>(MessagesUtils.message("exception.print")).data(code);
+        boolean onClient = (output & OutputType.ON_CLIENT) > 0;
+        FailResult<String> result = onClient ? new FailResult<>(e.getMessage()) : new FailResult<>();
+        if (code == null) {
+            return result;
+        } else {
+            return result.data(code);
+        }
+    }
+
+    private interface OutputType {
+        int ON_CONSOLE = 1;
+        int ON_FILE = 1 << 1;
+        int ON_CLIENT = 1 << 2;
     }
 }

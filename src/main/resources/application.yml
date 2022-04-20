@@ -1,14 +1,19 @@
 spring:
+  messages:
+    # 国际化文件存放地址
+    basename: i18n/messages
   autoconfigure:
     exclude: com.alibaba.druid.spring.boot.autoconfigure.DruidDataSourceAutoConfigure
   datasource:
     type: com.alibaba.druid.pool.DruidDataSource
     dynamic:
-      # 连接池的配置信息
+      # 数据库每个连接池的配置信息
       druid:
-        # 初始化大小，最小，最大
+        # 初始化大小
         initial-size: 10
+        # 最小存留数
         min-idle: 10
+        # 最大连接数
         maxActive: 200
         # 配置获取连接等待超时的时间，单位是毫秒
         maxWait: 30000
@@ -29,6 +34,9 @@ just-data:
   items:
     path: src\test\java\resources\envo
   exception:
+    # 接口异常输出方式（CONSOLE - 控制台；FILE - 独立文件；CLIENT - 客户端），多个方式以“,”隔开
+    output: CONSOLE
+    # 当output中存在FILE时生效
     file: log\exception.log
   login:
     enable: true
@@ -36,7 +44,7 @@ just-data:
       label: demo
       sql: "SELECT user_password FROM t_user WHERE id = @{id}"
   permission:
-    enable: true
+    enable: false
     inner-permission: admin
     queryPermission:
       label: demo

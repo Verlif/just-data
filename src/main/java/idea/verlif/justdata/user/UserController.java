@@ -14,6 +14,8 @@ import idea.verlif.justdata.user.login.LoginUser;
 import idea.verlif.justdata.user.permission.PermissionConfig;
 import idea.verlif.justdata.util.RequestUtils;
 import idea.verlif.justdata.util.ResultSetUtils;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -31,6 +33,7 @@ import java.util.Map;
  * @version 1.0
  * @date 2022/4/18 14:15
  */
+@Tag(name = "用户相关")
 @RestController
 @RequestMapping("/special")
 public class UserController {
@@ -52,6 +55,7 @@ public class UserController {
     @Autowired
     private PermissionConfig permissionConfig;
 
+    @Operation(summary = "用户登录", description = "当开启了登录配置后，登录接口生效")
     @PostMapping("/login")
     public BaseResult<String> login(@RequestBody BaseUser user, HttpServletRequest request) throws SQLException, JsonProcessingException {
         if (loginConfig.isEnable()) {
@@ -90,6 +94,7 @@ public class UserController {
         return new FailResult<>(ResultCode.FAILURE_DISABLED_LOGIN);
     }
 
+    @Operation(summary = "用户登出")
     @PutMapping("/logout")
     public BaseResult<String> logout() {
         userService.logout();

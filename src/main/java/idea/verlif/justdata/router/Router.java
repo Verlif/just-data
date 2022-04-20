@@ -3,6 +3,7 @@ package idea.verlif.justdata.router;
 import idea.verlif.justdata.base.constant.MethodConstant;
 import idea.verlif.justdata.item.Item;
 import idea.verlif.parser.vars.VarsContext;
+import io.swagger.v3.oas.annotations.media.Schema;
 
 import java.io.Serializable;
 import java.util.*;
@@ -84,11 +85,16 @@ public class Router {
         return new RouterInfo();
     }
 
+    @Schema(name = "Router信息")
     public final class RouterInfo implements Serializable {
 
+        @Schema(name = "Get方法API列表")
         private final List<ApiInfo> get;
+        @Schema(name = "Post方法API列表")
         private final List<ApiInfo> post;
+        @Schema(name = "Put方法API列表")
         private final List<ApiInfo> put;
+        @Schema(name = "Delelte方法API列表")
         private final List<ApiInfo> delete;
 
         public RouterInfo() {
@@ -127,18 +133,25 @@ public class Router {
         }
     }
 
+    @Schema(name = "操作项API信息")
     private static final class ApiInfo {
 
+        @Schema(name = "API")
         private final String api;
 
+        @Schema(name = "API名称")
         private final String name;
 
+        @Schema(name = "API方法")
         private final String method;
 
+        @Schema(name = "API访问权限")
         private final String permission;
 
+        @Schema(name = "请求路径参数")
         private final Set<Param> paramSet;
 
+        @Schema(name = "请求Body参数")
         private final Set<Param> bodySet;
 
         public ApiInfo(Item item) {
@@ -207,10 +220,13 @@ public class Router {
             return bodySet;
         }
 
+        @Schema(name = "请求参数")
         private static final class Param {
 
+            @Schema(name = "参数名")
             private final String name;
 
+            @Schema(name = "参数默认值")
             private final String defaultVal;
 
             public Param(String name) {

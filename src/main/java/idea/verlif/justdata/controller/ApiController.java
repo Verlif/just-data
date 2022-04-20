@@ -17,6 +17,9 @@ import idea.verlif.justdata.user.permission.PermissionCheck;
 import idea.verlif.justdata.util.RequestUtils;
 import idea.verlif.justdata.util.ResultSetUtils;
 import idea.verlif.spring.logging.api.LogIt;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -31,6 +34,7 @@ import java.util.Map;
  * @version 1.0
  * @date 2022/4/8 11:33
  */
+@Tag(name = "API接口访问")
 @RestController
 @RequestMapping("/api")
 public class ApiController {
@@ -44,11 +48,12 @@ public class ApiController {
     @Autowired
     private PermissionCheck permissionCheck;
 
+    @Operation(summary = "Get接口")
     @LogIt(message = "", handler = ApiGetLogHandler.class)
     @GetMapping("/{label}/{api}")
     public BaseResult<List<Map<String, Object>>> get(
-            @PathVariable String label,
-            @PathVariable String api,
+            @Parameter(name = "标签") @PathVariable String label,
+            @Parameter(name = "接口API") @PathVariable String api,
             HttpServletRequest request) throws SQLException, JsonProcessingException {
         Router router = routerManager.getRouter(label);
         if (router == null) {
@@ -68,13 +73,13 @@ public class ApiController {
         }
     }
 
+    @Operation(summary = "Post接口")
     @LogIt(message = "", handler = ApiPostLogHandler.class)
     @PostMapping("/{label}/{api}")
     public BaseResult<String> post(
-            @PathVariable String label,
-            @PathVariable String api,
-            HttpServletRequest request
-    ) throws SQLException, JsonProcessingException {
+            @Parameter(name = "标签") @PathVariable String label,
+            @Parameter(name = "接口API") @PathVariable String api,
+            HttpServletRequest request) throws SQLException, JsonProcessingException {
         Router router = routerManager.getRouter(label);
         if (router == null) {
             return new FailResult<>(ResultCode.FAILURE_NO_LABEL);
@@ -96,13 +101,13 @@ public class ApiController {
         }
     }
 
+    @Operation(summary = "Put接口")
     @LogIt(message = "", handler = ApiPutLogHandler.class)
     @PutMapping("/{label}/{api}")
     public BaseResult<String> put(
-            @PathVariable String label,
-            @PathVariable String api,
-            HttpServletRequest request
-    ) throws SQLException, JsonProcessingException {
+            @Parameter(name = "标签") @PathVariable String label,
+            @Parameter(name = "接口API") @PathVariable String api,
+            HttpServletRequest request) throws SQLException, JsonProcessingException {
         Router router = routerManager.getRouter(label);
         if (router == null) {
             return new FailResult<>(ResultCode.FAILURE_NO_LABEL);
@@ -124,13 +129,13 @@ public class ApiController {
         }
     }
 
+    @Operation(summary = "Delete接口")
     @LogIt(message = "", handler = ApiDeleteLogHandler.class)
     @DeleteMapping("/{label}/{api}")
     public BaseResult<String> delete(
-            @PathVariable String label,
-            @PathVariable String api,
-            HttpServletRequest request
-    ) throws SQLException, JsonProcessingException {
+            @Parameter(name = "标签") @PathVariable String label,
+            @Parameter(name = "接口API") @PathVariable String api,
+            HttpServletRequest request) throws SQLException, JsonProcessingException {
         Router router = routerManager.getRouter(label);
         if (router == null) {
             return new FailResult<>(ResultCode.FAILURE_NO_LABEL);

@@ -6,6 +6,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import idea.verlif.justdata.encrypt.rsa.RsaService;
 import idea.verlif.justdata.item.Item;
 import idea.verlif.justdata.macro.GlobalMacroManager;
+import idea.verlif.justdata.sql.exception.LackOfSqlParamException;
 import idea.verlif.justdata.util.DataSourceUtils;
 import idea.verlif.parser.vars.VarsContext;
 import idea.verlif.parser.vars.VarsHandler;
@@ -169,7 +170,7 @@ public class SqlExecutor {
             } else if (ss.length == 2) {
                 return ss[1];
             }
-            return s;
+            throw new LackOfSqlParamException(s1);
         }
     }
 
@@ -201,7 +202,7 @@ public class SqlExecutor {
             } else if (ss.length == 2) {
                 return ss[1];
             }
-            return s;
+            throw new LackOfSqlParamException(s1);
         }
     }
 
@@ -219,7 +220,11 @@ public class SqlExecutor {
         @Override
         public String handle(int i, String s, String s1) {
             String val = macroManager.get(s1);
-            return val == null ? s1 : val;
+            if (val == null) {
+                throw new LackOfSqlParamException(s1);
+            } else {
+                return val;
+            }
         }
     }
 }
