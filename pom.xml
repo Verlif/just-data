@@ -6,7 +6,7 @@
 
     <groupId>idea.verlif</groupId>
     <artifactId>just-data</artifactId>
-    <version>1.0-SNAPSHOT</version>
+    <version>0.1</version>
 
     <properties>
         <maven.compiler.source>8</maven.compiler.source>
@@ -36,6 +36,11 @@
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-security</artifactId>
+        </dependency>
+        <!-- Redis -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-data-redis</artifactId>
         </dependency>
 
         <!-- Api文档 -->
@@ -75,12 +80,8 @@
             <artifactId>jjwt</artifactId>
             <version>0.9.1</version>
         </dependency>
-        <!-- Redis -->
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-data-redis</artifactId>
-        </dependency>
 
+        <!-- 驱动 -->
         <!-- MySQL -->
         <dependency>
             <groupId>mysql</groupId>
@@ -115,10 +116,9 @@
         <dependency>
             <groupId>com.github.Verlif</groupId>
             <artifactId>file-spring-boot-starter</artifactId>
-            <version>2.6.6-0.4</version>
+            <version>2.6.6-0.5</version>
         </dependency>
     </dependencies>
-
 
     <repositories>
         <repository>
@@ -126,4 +126,29 @@
             <url>https://jitpack.io</url>
         </repository>
     </repositories>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-maven-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>repackage</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+        <resources>
+            <resource>
+                <directory>src\main\resources</directory>
+                <excludes>
+                    <exclude>application.yml</exclude>
+                    <exclude>i18n\message.properties</exclude>
+                </excludes>
+            </resource>
+        </resources>
+    </build>
 </project>

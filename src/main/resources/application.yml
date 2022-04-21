@@ -1,14 +1,18 @@
 spring:
   messages:
-    # 国际化文件存放地址
+    # 语言文件路径
     basename: i18n/messages
   autoconfigure:
     exclude: com.alibaba.druid.spring.boot.autoconfigure.DruidDataSourceAutoConfigure
+  # Redis配置
   redis:
-    enabled: true
+    # 是否使用redis替换内存缓存
+    enabled: false
     host: 127.0.0.1
     port: 6379
+  # 数据库总配置
   datasource:
+    # 数据源类型选择
     type: com.alibaba.druid.pool.DruidDataSource
     dynamic:
       # 数据库每个连接池的配置信息
@@ -26,22 +30,24 @@ spring:
         # 配置一个连接在池中最小生存的时间，单位是毫秒
         minEvictableIdleTimeMillis: 300000
 
-mybatis:
-  configuration:
-    log-impl: org.apache.ibatis.logging.slf4j.Slf4jImpl
-
+# 基础日志配置
 logging:
+  # 日志记录等级
   level:
     idea.verlif.justdata: DEBUG
 
 just-data:
+  # 操作项配置
   items:
-    path: src\test\java\resources\envo
+    # 操作项配置文件路径
+    path: src\test\java\resources\one
+  # 接口异常配置
   exception:
     # 接口异常输出方式（CONSOLE - 控制台；FILE - 独立文件；CLIENT - 客户端），多个方式以“,”隔开
     output: CONSOLE
     # 当output中存在FILE时生效
     file: log\exception.log
+  # 文件系统配置
   file:
     # 是否开启文件系统
     enabled: true
@@ -51,33 +57,50 @@ just-data:
     uploadType: ID
     # 文件操作模式，控制用户的文件管理权限（ID - 只允许用户操作自己的ID文件域文件，配合uploadType(ID)使用；ALL - 无限制）
     downloadType: ID
+  # 登录配置
   login:
+    # 是否开启登录服务
     enabled: true
+    # 获取用户密钥操作项
     queryUserKey:
+      # 操作项label
       label: demo
+      # 获取密钥sql，放回用户密钥
       sql: "SELECT user_password FROM t_user WHERE id = @{id}"
+  # 权限服务配置
   permission:
+    # 是否开启权限服务
     enabled: false
+    # 非操作项接口访问权限。置为空则不需要权限
     inner-permission: admin
+    # 获取用户权限操作项
     queryPermission:
+      # 操作项label
       label: demo
+      # 获取用户权限key列表，返回用户的权限key列表
       sql: "SELECT permission
         FROM t_permission p
         LEFT JOIN t_role_permission rp ON rp.permission_id = p.permission_id
         LEFT JOIN t_user_role ur ON ur.role_id = rp.role_id
         WHERE ur.user_id = ${userId}"
 
+# Station配置
 station:
+  # 接口日志
   api-log:
+    # 接口日志线程信息
     pool-info:
+      # 是否以后台线程方式运行接口日志服务
       enable: true
       # 日志线程池最大线程数
       max: 200
       # 日志等待队列长度
       length: 1000
+  # 文件配置
   file:
-    # 是否允许新上传的文件覆盖已有的同名文件
+    # 是否允许新上传的文件覆盖已有的同名文件。false则上传同名文件会被拒绝。
     cover: false
+    # 文件上传路径
     path:
       # 文件系统根目录，相对路径或绝对路径
       main: F:/upload

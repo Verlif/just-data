@@ -10,6 +10,7 @@ __数据库接口映射服务__
 - [SQL中使用变量参数](docs/操作项SQL格式规范.md)
 - [登录与权限配置](docs/登录与权限.md)
 - [内置接口文档](docs/内置接口文档.md)
+- [文件操作](docs/文件操作.md)
 
 ## 特点
 
@@ -28,34 +29,41 @@ __数据库接口映射服务__
 2. 创建对应的数据库连接（这里使用的是Druid连接池）。
 3. 加载操作项，并映射到对应数据库。
 4. 根据加载的操作项生成操作项接口。
-5. 完成。
+5. 操作项生成的接口都在`/api/{label}/{api}`下。
 
 ## TODO
 
 * [x] 基础操作项加载
-* [x] 权限控制
+* [x] 接口权限控制
 * [x] 接口日志
 * [ ] 支持多种数据库
 
-  | 数据库 | 支持状态 |
-  |:-----| :----: |
-  | MySql     | 支持   |
-  | Sql Server |      |
-  | Oracle    |      |
-  | PostgreSQL |      |
-  | sqlite |      |
+  * [x] MySql
+  * [ ] Sql Server
+  * [ ] Oracle
+  * [ ] PostgreSQL
+  * [ ] Sqlite
 
-* [x] 支持多个数据源
+* [x] 同时连接多个数据源
 * [x] RSA加密支持
-* [x] 动态更新操作项
+* [x] 动态更新操作项配置
 * [x] API列表展示更多的信息
-* [ ] 文件上传与下载
+* [x] 文件上传与下载
 * [ ] 支持外置jar包拓展
 * [ ] 数据库操作项自动生成
-* [ ] 更自由的文本自定义
+* [x] 更自由的文本自定义
 * [ ] 指令API
 
 ## 配置
+
+Just-data的配置基于`SpringBoot`，目前有两个配置文件：
+
+- `application.yml` - 总配置文件
+- `message.properties` - 语言文本文件
+
+### 语言文件
+
+语言文件默认是`i18n\message.properties`，可以通过`spring.messages.basename`修改。
 
 ### Station配置
 
@@ -102,6 +110,15 @@ just-data:
         LEFT JOIN t_role_permission rp ON rp.permission_id = p.permission_id
         LEFT JOIN t_user_role ur ON ur.role_id = rp.role_id
         WHERE ur.user_id = ${userId}"
+  file:
+    # 是否开启文件系统
+    enabled: true
+    # 使用文件系统时是否需要登录
+    needOnline: false
+    # 文件上传模式，决定了上传文件的存储模式（DAY - 按照日期建立文件夹；MONTH - 按照月份建立文件夹；ID - 根据登录用户ID建立文件夹）
+    uploadType: ID
+    # 文件操作模式，控制用户的文件管理权限（ID - 只允许用户操作自己的ID文件域文件，配合uploadType(ID)使用；ALL - 无限制）
+    downloadType: ID
 ```
 
 注：
