@@ -17,7 +17,7 @@ public class PermissionCheck {
     private PermissionConfig permissionConfig;
 
     public boolean hasPermission(String targetPermission) {
-        if (targetPermission == null || targetPermission.length() == 0 || !permissionConfig.isEnable()) {
+        if (targetPermission == null || targetPermission.length() == 0 || !permissionConfig.isEnabled()) {
             return true;
         }
         LoginUser loginUser = UserService.getLoginUser();

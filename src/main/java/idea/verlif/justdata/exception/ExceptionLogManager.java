@@ -8,6 +8,7 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Configuration;
 
 import java.io.*;
+import java.util.Date;
 import java.util.Locale;
 import java.util.UUID;
 
@@ -36,7 +37,7 @@ public class ExceptionLogManager implements ExceptionHolder<Throwable> {
             String code = genExceptionCode(throwable);
             try (FileOutputStream fos = new FileOutputStream(file, true);
                  PrintWriter writer = new PrintWriter(fos)) {
-                writer.append(code).append(":\n");
+                writer.append(new Date().toString()).append(code).append(":\n");
                 writer.flush();
                 throwable.printStackTrace(writer);
                 return code;

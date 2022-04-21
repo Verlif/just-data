@@ -84,7 +84,11 @@ public enum ResultCode {
     /**
      * 未开启登录
      */
-    FAILURE_DISABLED_LOGIN(640, MessagesUtils.message("disabled.login")),
+    FAILURE_DISABLED_LOGIN(710, MessagesUtils.message("disabled.login")),
+    /**
+     * 未开启文件传输
+     */
+    FAILURE_DISABLED_FILE(720, MessagesUtils.message("disabled.file")),
     /**
      * 服务器错误
      */

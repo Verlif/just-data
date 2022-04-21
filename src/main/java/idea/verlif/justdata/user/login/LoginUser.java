@@ -2,6 +2,7 @@ package idea.verlif.justdata.user.login;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
+import java.io.Serializable;
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashSet;
@@ -14,7 +15,7 @@ import java.util.Set;
  * @version 1.0
  * @date 2022/4/18 14:12
  */
-public class LoginUser {
+public class LoginUser implements Serializable {
 
     /**
      * 登录Code
@@ -29,12 +30,16 @@ public class LoginUser {
     /**
      * 用户ID
      */
-    private final Object id;
+    private Object id;
 
     /**
      * 用户权限
      */
     private final Set<String> permissions;
+
+    public LoginUser() {
+        this.permissions = new HashSet<>();
+    }
 
     public LoginUser(Object id) {
         this.id = id;
@@ -48,7 +53,6 @@ public class LoginUser {
     public String getToken() {
         return id + ":" + code;
     }
-
 
     public String getCode() {
         return code;
@@ -75,8 +79,16 @@ public class LoginUser {
         permissions.addAll(collection);
     }
 
+    public void setId(Object id) {
+        this.id = id;
+    }
+
     public Object getId() {
         return id;
+    }
+
+    public Set<String> getPermissions() {
+        return permissions;
     }
 
     public boolean hasPermission(String permission) {

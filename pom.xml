@@ -75,6 +75,11 @@
             <artifactId>jjwt</artifactId>
             <version>0.9.1</version>
         </dependency>
+        <!-- Redis -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-data-redis</artifactId>
+        </dependency>
 
         <!-- MySQL -->
         <dependency>
@@ -92,7 +97,7 @@
         <dependency>
             <groupId>com.github.Verlif</groupId>
             <artifactId>exception-spring-boot-starter</artifactId>
-            <version>2.6.3-beta0.1</version>
+            <version>2.6.6-0.1</version>
         </dependency>
         <!-- 接口日志 -->
         <dependency>
@@ -104,7 +109,13 @@
         <dependency>
             <groupId>com.github.Verlif</groupId>
             <artifactId>task-spring-boot-starter</artifactId>
-            <version>2.6.6-1.1</version>
+            <version>2.6.6-1.2</version>
+        </dependency>
+        <!-- 文件系统 -->
+        <dependency>
+            <groupId>com.github.Verlif</groupId>
+            <artifactId>file-spring-boot-starter</artifactId>
+            <version>2.6.6-0.4</version>
         </dependency>
     </dependencies>
 

@@ -58,7 +58,7 @@ public class UserController {
     @Operation(summary = "用户登录", description = "当开启了登录配置后，登录接口生效")
     @PostMapping("/login")
     public BaseResult<String> login(@RequestBody BaseUser user, HttpServletRequest request) throws SQLException, JsonProcessingException {
-        if (loginConfig.isEnable()) {
+        if (loginConfig.isEnabled()) {
             Sql sql = loginConfig.getQueryUserKey();
             if (sql.getSql() == null || sql.getLabel() == null) {
                 LOGGER.error("Lack of queryUser param!");
@@ -78,7 +78,7 @@ public class UserController {
                     return new FailResult<>(ResultCode.FAILURE_LOGIN_FAIL);
                 } else {
                     // 权限赋值
-                    if (permissionConfig.isEnable() && permissionConfig.getQueryPermission().isEnabled()) {
+                    if (permissionConfig.isEnabled() && permissionConfig.getQueryPermission().isEnabled()) {
                         sql = permissionConfig.getQueryPermission();
                         ResultSet permissionSet = sqlExecutor.exec(sql.getLabel(), sql.getSql(), map, user.toString());
                         List<String> pList = ResultSetUtils.toStringList(permissionSet);

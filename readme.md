@@ -58,9 +58,12 @@ __数据库接口映射服务__
 ## 配置
 
 ### Station配置
-延续了station的配置，包括了以下组件配置：
 
-* [Api-log](https://github.com/Verlif/logging-spring-boot-starter)
+延续了`Station`的配置，包括了以下组件配置：
+
+* [ApiLogging](https://github.com/Verlif/logging-spring-boot-starter)
+* [FileService](https://github.com/Verlif/file-spring-boot-starter)
+* [TaskService](https://github.com/Verlif/task-spring-boot-starter)
 
 ### JustData配置
 
@@ -77,7 +80,7 @@ just-data:
   # 登录配置
   login:
     # 是否开启登录
-    enable: true
+    enabled: true
     # 获取用户的密钥
     queryUserKey:
       # 数据源label
@@ -87,7 +90,7 @@ just-data:
   # 权限配置
   permission:
     # 是否开启权限
-    enable: true
+    enabled: true
     # 内置接口需要的权限key（值为空则不需要权限）
     inner-permission: admin
     queryPermission:
@@ -100,3 +103,7 @@ just-data:
         LEFT JOIN t_user_role ur ON ur.role_id = rp.role_id
         WHERE ur.user_id = ${userId}"
 ```
+
+注：
+
+* 可以通过`spring.redis.enabled=true`将内存缓存模式替换为`redis`缓存。

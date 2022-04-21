@@ -16,7 +16,7 @@ public class PermissionConfig {
     /**
      * 是否开启登录
      */
-    private boolean enable;
+    private boolean enabled;
 
     /**
      * 获取用户密钥
@@ -32,12 +32,12 @@ public class PermissionConfig {
         queryPermission = new Sql();
     }
 
-    public boolean isEnable() {
-        return enable;
+    public boolean isEnabled() {
+        return enabled;
     }
 
-    public void setEnable(boolean enable) {
-        this.enable = enable;
+    public void setEnabled(boolean enabled) {
+        this.enabled = enabled;
     }
 
     public Sql getQueryPermission() {
