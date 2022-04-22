@@ -14,13 +14,18 @@
             <api>user</api>
             <method>GET</method>
             <permission>admin</permission>
-            <sql>SELECT * FROM t_user WHERE id = @DECRYPT(#{userId})</sql>
+            <sql>SELECT * FROM t_user WHERE user_name = '@DECRYPT(#{userId})'</sql>
         </item>
         <item name="获取个人信息">
             <api>userself</api>
             <method>GET</method>
             <permission>user</permission>
-            <sql>SELECT * FROM t_user WHERE id = ${userId}</sql>
+            <sql>SELECT user_name, create_time FROM t_user WHERE user_name = '${userId}'</sql>
+        </item>
+        <item name="注册用户">
+            <api>register</api>
+            <method>POST</method>
+            <sql>INSERT INTO t_user (user_name, user_password, create_time) VALUES ('@{username}', '@ENCODE(@DECRYPT(@{password}))', now())</sql>
         </item>
     </items>
 </info>

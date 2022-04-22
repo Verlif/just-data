@@ -5,12 +5,15 @@ import idea.verlif.justdata.base.result.BaseResult;
 import idea.verlif.justdata.base.result.ResultCode;
 import idea.verlif.justdata.base.result.ext.FailResult;
 import idea.verlif.justdata.base.result.ext.OkResult;
+import idea.verlif.justdata.encrypt.code.Encoder;
+import idea.verlif.justdata.encrypt.rsa.RsaService;
 import idea.verlif.justdata.router.RouterManager;
 import idea.verlif.justdata.sql.Sql;
 import idea.verlif.justdata.sql.SqlExecutor;
 import idea.verlif.justdata.user.login.BaseUser;
 import idea.verlif.justdata.user.login.LoginConfig;
 import idea.verlif.justdata.user.login.LoginUser;
+import idea.verlif.justdata.user.permission.PermissionCheck;
 import idea.verlif.justdata.user.permission.PermissionConfig;
 import idea.verlif.justdata.util.RequestUtils;
 import idea.verlif.justdata.util.ResultSetUtils;
@@ -55,6 +58,15 @@ public class UserController {
     @Autowired
     private PermissionConfig permissionConfig;
 
+    @Autowired
+    private PermissionCheck permissionCheck;
+
+    @Autowired
+    private Encoder encoder;
+
+    @Autowired
+    private RsaService rsaService;
+
     @Operation(summary = "用户登录", description = "当开启了登录配置后，登录接口生效")
     @PostMapping("/login")
     public BaseResult<String> login(@RequestBody BaseUser user, HttpServletRequest request) throws SQLException, JsonProcessingException {
@@ -70,7 +82,12 @@ public class UserController {
             if (key == null) {
                 return new FailResult<>(ResultCode.FAILURE_LOGIN_MISSING);
             }
-            if (key.equals(user.getKey())) {
+            // 尝试RSA解密
+            String dekey = rsaService.decryptByPrivateKey(user.getKey());
+            if (dekey != null && dekey.length() > 0) {
+                user.setKey(dekey);
+            }
+            if (key.equals(user.getKey()) || encoder.matches(user.getKey(), key)) {
                 LoginUser loginUser = new LoginUser(user.getId());
                 loginUser.setLoginTime(new Date());
                 String token = userService.login(loginUser);
@@ -92,6 +109,37 @@ public class UserController {
             }
         }
         return new FailResult<>(ResultCode.FAILURE_DISABLED_LOGIN);
+    }
+
+    @Operation(summary = "配置刷新", description = "刷新Login与Permission的XML配置")
+    @PutMapping("/user/xml")
+    public BaseResult<?> refreshConfig() {
+        if (permissionCheck.hasInnerPermission()) {
+            LoginConfig config = new LoginConfig();
+            if (config.setFile(loginConfig.getFile())) {
+                loginConfig.setEnabled(config.isEnabled());
+                loginConfig.setFile(config.getFile());
+                loginConfig.setQueryUserKey(config.getQueryUserKey());
+            } else {
+                LOGGER.warn("Login xml can not be loaded.");
+                return new FailResult<>("Login xml");
+            }
+
+            PermissionConfig premConfig = new PermissionConfig();
+            if (premConfig.setFile(permissionConfig.getFile())) {
+                permissionConfig.setEnabled(premConfig.isEnabled());
+                permissionConfig.setFile(premConfig.getFile());
+                permissionConfig.setInnerPermission(permissionConfig.getInnerPermission());
+                permissionConfig.setQueryPermission(premConfig.getQueryPermission());
+            } else {
+                LOGGER.warn("Permission xml can not be loaded.");
+                return new FailResult<>("Permission xml");
+            }
+
+            return OkResult.empty();
+        } else {
+            return new FailResult<>(ResultCode.FAILURE_UNAVAILABLE);
+        }
     }
 
     @Operation(summary = "用户登出")

@@ -11,7 +11,7 @@
 * `@{}`表示了body取值。例如`@{username}`就会从 __request荷载的json数据__ 中寻找`username`的值，赋值到此处。
   * `@{}`支持json链取值，例如`@{school.classroom.student}`就会从跟节点的`school对象`中取`classroom对象`，再从`classroom对象`中取`student对象`。
 * `${}`表示了内置参数，通常与登录用户相关。可用的参数如下：
-  * `${userId}`当前登录用户ID。
+  * `${userId}`当前登录用户ID。这里的用户ID表示的是登录时传递的`id`数据，例如使用用户名与密码登录，这时`${userId}`就是表示了用户名。
 
 ## 变量默认值
 
@@ -21,9 +21,9 @@
 
 ## 变量值处理
 
-### 数据加密
+### 数据解密
 
-Just-data支持`RSA`方式的数据加密，并提供了公钥获取接口（`GET`方法`special/rsa`）。开发者需要使用加密时，只需要将公钥加密后的数据使用解密方法`@DECRYPT()`（区分大小写）即可。
+Just-data支持`RSA`方式的数据加密，并提供了公钥获取接口（`GET`方法`special/rsa`）。开发者需要使用加密时，只需要将公钥加密后的数据使用解密方法`@DECRYPT()`解密（区分大小写）即可。
 
 例如：
 
@@ -38,3 +38,43 @@ Just-data支持`RSA`方式的数据加密，并提供了公钥获取接口（`GE
 ```
 
 当解密失败时，会直接使用客户端传参。所以实际上使用`@DECRYPT()`时，不使用加密数据作为参数值也是可以的，不过不推荐。
+
+### 用户密钥加密
+
+Just-data使用了BCryptPasswordEncoder作为密钥加密工具，这也表明了这里的加密不能解密，只能做数据匹配。
+
+密钥加密使用方法`@ENCODE()`即可，例如：
+
+```xml
+<item name="注册用户">
+    <api>register</api>
+    <method>POST</method>
+    <sql>INSERT INTO t_user (user_name, user_password, create_time) VALUES ('@{username}', '@ENCODE(@{password})', now())</sql>
+</item>
+```
+
+此时访问`/api/domo/register`，并传参：
+
+```json
+{
+	"username": "Verlif",
+	"password": "123"
+}
+```
+
+那么数据库中就会创建类似于如下的数据（每次加密同一段字符串，产生的密文都不同）：
+
+| id  | user_name | user_password                                                 | create_time         |
+|-----|-----------|---------------------------------------------------------------|---------------------|
+| 3   | Verlif    | 	$2a$10$kBMcIjsUdEi0VX5zkG2y3.rCVKu.NhejCGXIv8.IU//ihoIpczBMO | 2022-04-22 11:09:34 |
+
+随后访问登录接口（登录配置开启时）`\special\login`，并传递通过公钥加密后密码：
+
+```json
+{
+	"id": 3,
+	"key": "BUx9VJ4qpN05/W01MURjJtAWoVfP1SXtAxV7ngStXGQgvxiIAWqZ5CMbJO/Wa1ppir156a8xkbGumIcYTNBd00CnD2wZ0Te5TkrG6ATmMYCMmrFt0mK8kFqv2Xt0uKLGI77M9LaKUTUDTUPw7jZcTShEaMsyv+DHwNizHsGOm8U="
+}
+```
+
+当密钥正确时即完成登录。

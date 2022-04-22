@@ -40,21 +40,17 @@ public class TokenConfig {
     private String secret = "abcdefghijklmnopqrstuvwxyz";
 
     /**
-     * Token存活时间（单位：毫秒）
+     * Token存活时间（单位：秒）
      */
-    private Long expireTime = 3600000L;
+    private Long expireTime = 3600L;
 
     /**
-     * 记住登录时间（单位：毫秒）
+     * 设置Token存活时间，单位分钟
+     *
+     * @param expireTime 存活分钟数
      */
-    private Long remember = 14515200000L;
-
     public void setExpireTime(Long expireTime) {
-        this.expireTime = expireTime * 60000;
-    }
-
-    public void setRemember(Long remember) {
-        this.remember = remember * 86400000;
+        this.expireTime = expireTime;
     }
 
     @Bean
@@ -90,9 +86,5 @@ public class TokenConfig {
 
     public Long getExpireTime() {
         return expireTime;
-    }
-
-    public Long getRemember() {
-        return remember;
     }
 }

@@ -3,6 +3,7 @@ package idea.verlif.justdata.sql;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import idea.verlif.justdata.encrypt.code.Encoder;
 import idea.verlif.justdata.encrypt.rsa.RsaService;
 import idea.verlif.justdata.item.Item;
 import idea.verlif.justdata.macro.GlobalMacroManager;
@@ -42,10 +43,14 @@ public class SqlExecutor {
     private RsaService rsaService;
 
     @Autowired
+    private Encoder encoder;
+
+    @Autowired
     private GlobalMacroManager macroManager;
 
     private final RsaReplaceHandler rsaReplaceHandler;
     private final MacroReplaceHandler macroReplaceHandler;
+    private final EncoderReplaceHandler encoderReplaceHandler;
 
     private final Map<String, Connection> connectionMap;
     private final ObjectMapper objectMapper;
@@ -55,6 +60,7 @@ public class SqlExecutor {
         this.objectMapper = new ObjectMapper();
         this.rsaReplaceHandler = new RsaReplaceHandler();
         this.macroReplaceHandler = new MacroReplaceHandler();
+        this.encoderReplaceHandler = new EncoderReplaceHandler();
     }
 
     /**
@@ -133,6 +139,10 @@ public class SqlExecutor {
         VarsContext rsaContext = new VarsContext(sql);
         rsaContext.setAreaTag("@DECRYPT(", ")");
         sql = rsaContext.build(rsaReplaceHandler);
+        // 重编码
+        VarsContext encodeContext = new VarsContext(sql);
+        encodeContext.setAreaTag("@ENCODE(", ")");
+        sql = encodeContext.build(encoderReplaceHandler);
         LOGGER.debug(sql);
         return sql;
     }
@@ -225,6 +235,15 @@ public class SqlExecutor {
             } else {
                 return val;
             }
+        }
+    }
+
+    private final class EncoderReplaceHandler implements VarsHandler {
+
+        @Override
+        public String handle(int i, String s, String s1) {
+            String de = encoder.encode(s1);
+            return de;
         }
     }
 }

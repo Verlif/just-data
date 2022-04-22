@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<login>
+    <!-- 开启登录配置 -->
+    <enabled>true</enabled>
+    <!-- 登录使用的label -->
+    <label>demo</label>
+    <!-- 获取用户密钥的sql -->
+    <sql>SELECT user_password FROM t_user WHERE id = @{id}</sql>
+</login>

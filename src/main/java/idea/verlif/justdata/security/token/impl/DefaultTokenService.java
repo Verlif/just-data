@@ -32,7 +32,7 @@ public class DefaultTokenService implements TokenService {
         // 生成登录随机Code
         loginUser.setCode(UUID.randomUUID().toString());
         String id = loginUser.getToken();
-        cacheHandler.put(getCacheKey(id), loginUser, tokenConfig.getExpireTime(), TimeUnit.MILLISECONDS);
+        cacheHandler.put(getCacheKey(id), loginUser, tokenConfig.getExpireTime(), TimeUnit.SECONDS);
         return Jwts.builder().setSubject(id).signWith(SignatureAlgorithm.HS256, tokenConfig.getSecret()).compact();
     }
 
@@ -57,7 +57,7 @@ public class DefaultTokenService implements TokenService {
     @Override
     public void refreshUser(LoginUser loginUser) {
         String id = loginUser.getToken();
-        cacheHandler.expire(getCacheKey(id), tokenConfig.getExpireTime(), TimeUnit.MILLISECONDS);
+        cacheHandler.put(getCacheKey(id), loginUser, tokenConfig.getExpireTime(), TimeUnit.SECONDS);
     }
 
     /**

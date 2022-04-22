@@ -7,7 +7,7 @@ spring:
   # Redis配置
   redis:
     # 是否使用redis替换内存缓存
-    enabled: false
+    enabled: true
     host: 127.0.0.1
     port: 6379
   # 数据库总配置
@@ -37,6 +37,14 @@ logging:
     idea.verlif.justdata: DEBUG
 
 just-data:
+  # Token配置
+  token:
+    # 解析的请求header参数名
+    header: Token
+    # Token生成使用的密钥
+    secret: qwertyuioplkjhgfdsazxcvbnm
+    # Token有效期，也表示了登录token空闲时的存活时间。单位为秒
+    expireTime: 3600
   # 操作项配置
   items:
     # 操作项配置文件路径
@@ -59,30 +67,12 @@ just-data:
     downloadType: ID
   # 登录配置
   login:
-    # 是否开启登录服务
-    enabled: true
-    # 获取用户密钥操作项
-    queryUserKey:
-      # 操作项label
-      label: demo
-      # 获取密钥sql，放回用户密钥
-      sql: "SELECT user_password FROM t_user WHERE id = @{id}"
+    # 登录配置的xml地址
+    file: src\test\java\resources\login.xml
   # 权限服务配置
   permission:
-    # 是否开启权限服务
-    enabled: false
-    # 非操作项接口访问权限。置为空则不需要权限
-    inner-permission: admin
-    # 获取用户权限操作项
-    queryPermission:
-      # 操作项label
-      label: demo
-      # 获取用户权限key列表，返回用户的权限key列表
-      sql: "SELECT permission
-        FROM t_permission p
-        LEFT JOIN t_role_permission rp ON rp.permission_id = p.permission_id
-        LEFT JOIN t_user_role ur ON ur.role_id = rp.role_id
-        WHERE ur.user_id = ${userId}"
+    # 权限配置的xml地址
+    file: src\test\java\resources\permission.xml
 
 # Station配置
 station:

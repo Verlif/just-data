@@ -1,6 +1,7 @@
 package idea.verlif.justdata.item;
 
 import idea.verlif.justdata.datasource.DataSourceItem;
+import idea.verlif.justdata.util.XMLUtils;
 import org.dom4j.Document;
 import org.dom4j.Element;
 import org.dom4j.io.SAXReader;
@@ -32,7 +33,7 @@ public class ItemParser {
 
     public List<DataSourceItem> getDataSourceItemList() {
         List<DataSourceItem> list = new ArrayList<>();
-        Document document = load(file);
+        Document document = XMLUtils.load(file);
         if (document == null) {
             return list;
         }
@@ -67,7 +68,7 @@ public class ItemParser {
 
     public List<Item> getItemList() {
         List<Item> list = new ArrayList<>();
-        Document document = load(file);
+        Document document = XMLUtils.load(file);
         if (document != null) {
             // 获取根节点
             Element root = document.getRootElement();
@@ -119,7 +120,7 @@ public class ItemParser {
                     // 获取访问权限
                     String permissionStr = element.elementText("permission");
                     if (permissionStr != null) {
-                        item.setPermission(permissionStr);
+                        item.setPermission(permissionStr.replace("\n", " "));
                     }
                     // 将操作项添加到列表
                     list.add(item);
@@ -127,17 +128,6 @@ public class ItemParser {
             }
         }
         return list;
-    }
-
-    public static Document load(File file) {
-        Document document = null;
-        try {
-            SAXReader saxReader = new SAXReader();
-            document = saxReader.read(file);
-        } catch (Exception ex) {
-            ex.printStackTrace();
-        }
-        return document;
     }
 
     public String getLabel() {
