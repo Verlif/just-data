@@ -1,7 +1,6 @@
 package idea.verlif.justdata.util;
 
 import org.apache.commons.codec.binary.Base64;
-import sun.misc.BASE64Encoder;
 
 import javax.crypto.Cipher;
 import java.io.ByteArrayOutputStream;
@@ -257,13 +256,5 @@ public class RsaUtils {
     public static String decryptByPublicKey(String data, String publicKey) throws Exception {
         byte[] rs = Base64.decodeBase64(data);
         return new String(RsaUtils.decryptByPublicKey(rs, publicKey), StandardCharsets.UTF_8);
-    }
-
-    /**
-     * 以base64方式转码字节数组，生成字符串
-     */
-    public static String byte2Base64(byte[] bytes) {
-        BASE64Encoder encoder = new BASE64Encoder();
-        return encoder.encode(bytes);
     }
 }
