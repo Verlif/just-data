@@ -1,4 +1,4 @@
-package idea.verlif.justdata.user.login.auth;
+package idea.verlif.justdata.special.login.auth;
 
 import idea.verlif.justdata.util.MessagesUtils;
 import org.springframework.beans.factory.annotation.Autowired;

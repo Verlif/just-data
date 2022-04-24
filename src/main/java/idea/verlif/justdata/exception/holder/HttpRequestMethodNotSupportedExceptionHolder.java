@@ -1,4 +1,4 @@
-package idea.verlif.justdata.base.exception;
+package idea.verlif.justdata.exception.holder;
 
 import idea.verlif.justdata.base.result.ResultCode;
 import idea.verlif.justdata.base.result.ext.FailResult;

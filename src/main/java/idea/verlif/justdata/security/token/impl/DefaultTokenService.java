@@ -3,7 +3,7 @@ package idea.verlif.justdata.security.token.impl;
 import idea.verlif.justdata.cache.CacheHandler;
 import idea.verlif.justdata.security.token.TokenConfig;
 import idea.verlif.justdata.security.token.TokenService;
-import idea.verlif.justdata.user.login.LoginUser;
+import idea.verlif.justdata.special.login.LoginUser;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;

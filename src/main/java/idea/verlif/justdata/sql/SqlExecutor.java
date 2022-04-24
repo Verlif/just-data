@@ -9,7 +9,7 @@ import idea.verlif.justdata.base.result.ext.OkResult;
 import idea.verlif.justdata.encrypt.code.Encoder;
 import idea.verlif.justdata.encrypt.rsa.RsaService;
 import idea.verlif.justdata.item.Item;
-import idea.verlif.justdata.macro.GlobalMacroManager;
+import idea.verlif.justdata.macro.MacroManager;
 import idea.verlif.justdata.sql.exception.LackOfSqlParamException;
 import idea.verlif.justdata.util.DataSourceUtils;
 import idea.verlif.justdata.util.ResultSetUtils;
@@ -50,7 +50,7 @@ public class SqlExecutor {
     private Encoder encoder;
 
     @Autowired
-    private GlobalMacroManager macroManager;
+    private MacroManager macroManager;
 
     private final RsaReplaceHandler rsaReplaceHandler;
     private final MacroReplaceHandler macroReplaceHandler;

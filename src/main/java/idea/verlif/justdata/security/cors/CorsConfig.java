@@ -1,4 +1,4 @@
-package idea.verlif.justdata.cors;
+package idea.verlif.justdata.security.cors;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

@@ -1,6 +1,6 @@
 package idea.verlif.justdata.log;
 
-import idea.verlif.justdata.controller.ApiController;
+import idea.verlif.justdata.api.ApiController;
 import idea.verlif.spring.logging.api.ApiLogHandler;
 import idea.verlif.spring.logging.api.LogIt;
 import org.springframework.beans.factory.annotation.Autowired;

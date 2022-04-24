@@ -1,4 +1,4 @@
-package idea.verlif.justdata.user.login;
+package idea.verlif.justdata.special.permission;
 
 import idea.verlif.justdata.sql.Sql;
 import idea.verlif.justdata.util.XMLUtils;
@@ -17,13 +17,13 @@ import java.io.File;
  * @date 2022/4/19 10:31
  */
 @Configuration
-@ConfigurationProperties(prefix = "just-data.login")
-public class LoginConfig {
+@ConfigurationProperties(prefix = "just-data.permission")
+public class PermissionConfig {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(LoginConfig.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(PermissionConfig.class);
 
     /**
-     * 配置路径
+     * xml配置路径
      */
     private String file;
 
@@ -35,10 +35,15 @@ public class LoginConfig {
     /**
      * 获取用户密钥
      */
-    private Sql queryUserKey;
+    private Sql queryPermission;
 
-    public LoginConfig() {
-        queryUserKey = new Sql();
+    /**
+     * 内置接口需要的权限
+     */
+    private String innerPermission;
+
+    public PermissionConfig() {
+        queryPermission = new Sql();
     }
 
     public String getFile() {
@@ -48,7 +53,7 @@ public class LoginConfig {
     /**
      * 当设定了path时，会立即填充属性值
      *
-     * @param file 登录配置的xml文件路径
+     * @param file 权限配置的xml文件路径
      */
     public boolean setFile(String file) {
         this.file = file;
@@ -65,13 +70,19 @@ public class LoginConfig {
                 }
                 enabled = Boolean.parseBoolean(enabledEl.getText());
 
+                // 获取innerPermission
+                Element innerEl = root.element("inner-permission");
+                if (innerEl != null) {
+                    innerPermission = innerEl.getText();
+                }
+
                 // 获取label
                 Element labelEl = root.element("label");
                 if (labelEl == null) {
                     LOGGER.warn("Login xml need label to link database.");
                     return false;
                 }
-                queryUserKey.setLabel(labelEl.getText());
+                queryPermission.setLabel(labelEl.getText());
 
                 // 获取label
                 Element sqlEl = root.element("sql");
@@ -79,7 +90,7 @@ public class LoginConfig {
                     LOGGER.warn("Login xml need sql to verify user.");
                     return false;
                 }
-                queryUserKey.setSql(sqlEl.getText().replace("\n", " "));
+                queryPermission.setSql(sqlEl.getText().replace("\n", " "));
                 return true;
             }
         }
@@ -94,12 +105,19 @@ public class LoginConfig {
         this.enabled = enabled;
     }
 
-    public Sql getQueryUserKey() {
-        return queryUserKey;
+    public Sql getQueryPermission() {
+        return queryPermission;
     }
 
-    public void setQueryUserKey(Sql queryUserKey) {
-        this.queryUserKey = queryUserKey;
+    public void setQueryPermission(Sql queryPermission) {
+        this.queryPermission = queryPermission;
     }
 
+    public String getInnerPermission() {
+        return innerPermission;
+    }
+
+    public void setInnerPermission(String innerPermission) {
+        this.innerPermission = innerPermission;
+    }
 }

@@ -1,18 +1,15 @@
-package idea.verlif.justdata.user;
+package idea.verlif.justdata.special.user;
 
 import idea.verlif.justdata.security.token.TokenConfig;
 import idea.verlif.justdata.security.token.TokenService;
-import idea.verlif.justdata.user.login.auth.StationAuthentication;
-import idea.verlif.justdata.user.login.exception.CustomException;
-import idea.verlif.justdata.user.login.LoginUser;
-import idea.verlif.justdata.user.permission.PermissionConfig;
+import idea.verlif.justdata.special.login.auth.StationAuthentication;
+import idea.verlif.justdata.special.login.exception.CustomException;
+import idea.verlif.justdata.special.login.LoginUser;
 import idea.verlif.justdata.util.ServletUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
-
-import javax.servlet.http.HttpServletRequest;
 
 /**
  * @author Verlif

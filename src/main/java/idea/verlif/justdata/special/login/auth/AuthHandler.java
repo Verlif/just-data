@@ -1,4 +1,4 @@
-package idea.verlif.justdata.user.login.auth;
+package idea.verlif.justdata.special.login.auth;
 
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.userdetails.UserDetails;

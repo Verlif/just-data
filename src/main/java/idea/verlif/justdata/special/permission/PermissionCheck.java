@@ -1,7 +1,7 @@
-package idea.verlif.justdata.user.permission;
+package idea.verlif.justdata.special.permission;
 
-import idea.verlif.justdata.user.UserService;
-import idea.verlif.justdata.user.login.LoginUser;
+import idea.verlif.justdata.special.user.UserService;
+import idea.verlif.justdata.special.login.LoginUser;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 

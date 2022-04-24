@@ -4,7 +4,7 @@ import idea.verlif.justdata.base.result.BaseResult;
 import idea.verlif.justdata.base.result.ResultCode;
 import idea.verlif.justdata.base.result.ext.FailResult;
 import idea.verlif.justdata.base.result.ext.OkResult;
-import idea.verlif.justdata.user.UserService;
+import idea.verlif.justdata.special.user.UserService;
 import idea.verlif.spring.file.FileService;
 import idea.verlif.spring.file.domain.FileCart;
 import idea.verlif.spring.file.domain.FilePage;

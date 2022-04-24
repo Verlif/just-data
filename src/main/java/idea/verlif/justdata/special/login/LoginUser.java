@@ -1,4 +1,4 @@
-package idea.verlif.justdata.user.login;
+package idea.verlif.justdata.special.login;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 

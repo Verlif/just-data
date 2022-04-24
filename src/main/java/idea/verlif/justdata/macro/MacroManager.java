@@ -1,6 +1,6 @@
 package idea.verlif.justdata.macro;
 
-import idea.verlif.justdata.user.UserService;
+import idea.verlif.justdata.macro.handler.UserIdMacro;
 import org.springframework.stereotype.Component;
 
 import java.util.Map;
@@ -12,24 +12,22 @@ import java.util.concurrent.ConcurrentHashMap;
  * @date 2022/4/19 11:02
  */
 @Component
-public class GlobalMacroManager {
+public class MacroManager {
 
     private final Map<String, MarcoHandler> macroMap;
 
-    public GlobalMacroManager() {
+    public MacroManager() {
         macroMap = new ConcurrentHashMap<>();
 
         init();
     }
 
     private void init() {
-        macroMap.put("userId", () -> {
-            if (UserService.isOnline()) {
-                return UserService.getLoginUser().getId().toString();
-            } else {
-                return "";
-            }
-        });
+        addMacro(new UserIdMacro());
+    }
+
+    public void addMacro(MarcoHandler handler) {
+        macroMap.put(handler.getKey(), handler);
     }
 
     public String get(String key) {
@@ -37,11 +35,7 @@ public class GlobalMacroManager {
         if (key == null) {
             return null;
         }
-        return handler.get();
+        return handler.getValue();
     }
 
-    private interface MarcoHandler {
-
-        String get();
-    }
 }

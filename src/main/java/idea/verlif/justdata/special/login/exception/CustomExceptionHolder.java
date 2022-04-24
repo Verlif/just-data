@@ -1,4 +1,4 @@
-package idea.verlif.justdata.user.login.exception;
+package idea.verlif.justdata.special.login.exception;
 
 import idea.verlif.justdata.base.result.BaseResult;
 import idea.verlif.justdata.base.result.ResultCode;

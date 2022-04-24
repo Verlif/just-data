@@ -1,4 +1,4 @@
-package idea.verlif.justdata.user.login.auth;
+package idea.verlif.justdata.special.login.auth;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

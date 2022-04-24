@@ -1,4 +1,4 @@
-package idea.verlif.justdata.user;
+package idea.verlif.justdata.special.user;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import idea.verlif.justdata.base.result.BaseResult;
@@ -10,11 +10,11 @@ import idea.verlif.justdata.encrypt.rsa.RsaService;
 import idea.verlif.justdata.router.RouterManager;
 import idea.verlif.justdata.sql.Sql;
 import idea.verlif.justdata.sql.SqlExecutor;
-import idea.verlif.justdata.user.login.BaseUser;
-import idea.verlif.justdata.user.login.LoginConfig;
-import idea.verlif.justdata.user.login.LoginUser;
-import idea.verlif.justdata.user.permission.PermissionCheck;
-import idea.verlif.justdata.user.permission.PermissionConfig;
+import idea.verlif.justdata.special.login.BaseUser;
+import idea.verlif.justdata.special.login.LoginConfig;
+import idea.verlif.justdata.special.login.LoginUser;
+import idea.verlif.justdata.special.permission.PermissionCheck;
+import idea.verlif.justdata.special.permission.PermissionConfig;
 import idea.verlif.justdata.util.RequestUtils;
 import idea.verlif.justdata.util.ResultSetUtils;
 import io.swagger.v3.oas.annotations.Operation;
