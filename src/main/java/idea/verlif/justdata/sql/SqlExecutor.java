@@ -3,12 +3,16 @@ package idea.verlif.justdata.sql;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import idea.verlif.justdata.base.result.BaseResult;
+import idea.verlif.justdata.base.result.ext.FailResult;
+import idea.verlif.justdata.base.result.ext.OkResult;
 import idea.verlif.justdata.encrypt.code.Encoder;
 import idea.verlif.justdata.encrypt.rsa.RsaService;
 import idea.verlif.justdata.item.Item;
 import idea.verlif.justdata.macro.GlobalMacroManager;
 import idea.verlif.justdata.sql.exception.LackOfSqlParamException;
 import idea.verlif.justdata.util.DataSourceUtils;
+import idea.verlif.justdata.util.ResultSetUtils;
 import idea.verlif.parser.vars.VarsContext;
 import idea.verlif.parser.vars.VarsHandler;
 import org.slf4j.Logger;
@@ -18,9 +22,9 @@ import org.springframework.stereotype.Component;
 
 import javax.sql.DataSource;
 import java.sql.Connection;
-import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -72,35 +76,63 @@ public class SqlExecutor {
      * @return 执行结果
      * @throws SQLException 执行错误
      */
-    public ResultSet exec(Item item, Map<String, Object> map, String body) throws SQLException, JsonProcessingException {
+    public BaseResult<?> exec(Item item, Map<String, Object> map, String body) throws JsonProcessingException, SQLException {
         // sql变量替换
         String sql = parserSql(item.getSql(), map, body);
         // 切换数据源
         DataSourceUtils.switchDB(item);
         // 获取数据库连接
         Connection connection = getConnect(item);
-        PreparedStatement statement = connection.prepareStatement(sql);
-        return statement.executeQuery();
+        Statement statement = connection.createStatement();
+        if (statement.execute(sql)) {
+            return new OkResult<>(ResultSetUtils.toMapList(statement.getResultSet()));
+        } else {
+            if (statement.getUpdateCount() > 0) {
+                return OkResult.empty();
+            } else {
+                return FailResult.empty();
+            }
+        }
     }
 
-    public ResultSet exec(String label, String sql, Map<String, Object> map, String body) throws SQLException, JsonProcessingException {
+    /**
+     * 执行查询操作项
+     *
+     * @param item 操作项
+     * @param map  操作项参数
+     * @param body 请求内容
+     * @return 查询结果
+     * @throws SQLException 执行错误
+     */
+    public ResultSet query(Item item, Map<String, Object> map, String body) throws SQLException, JsonProcessingException {
+        // sql变量替换
+        String sql = parserSql(item.getSql(), map, body);
+        // 切换数据源
+        DataSourceUtils.switchDB(item);
+        // 获取数据库连接
+        Connection connection = getConnect(item);
+        Statement statement = connection.createStatement();
+        return statement.executeQuery(sql);
+    }
+
+    public ResultSet query(String label, String sql, Map<String, Object> map, String body) throws SQLException, JsonProcessingException {
         // sql变量替换
         sql = parserSql(sql, map, body);
         // 切换数据源
         DataSourceUtils.switchDB(label);
         // 获取数据库连接
         Connection connection = getConnect(label);
-        PreparedStatement statement = connection.prepareStatement(sql);
-        return statement.executeQuery();
+        Statement statement = connection.createStatement();
+        return statement.executeQuery(sql);
     }
 
     /**
-     * 执行操作项
+     * 更新操作项
      *
      * @param item 操作项
      * @param map  操作项参数
      * @param body 请求内容
-     * @return 执行结果
+     * @return 更新结果
      * @throws SQLException 执行错误
      */
     public boolean update(Item item, Map<String, Object> map, String body) throws SQLException, JsonProcessingException {

@@ -51,7 +51,7 @@ public class ApiController {
     @Operation(summary = "Get接口")
     @LogIt(message = "", handler = ApiGetLogHandler.class)
     @GetMapping("/{label}/{api}")
-    public BaseResult<List<Map<String, Object>>> get(
+    public BaseResult<?> get(
             @Parameter(name = "标签") @PathVariable String label,
             @Parameter(name = "接口API") @PathVariable String api,
             HttpServletRequest request) throws SQLException, JsonProcessingException {
@@ -66,8 +66,7 @@ public class ApiController {
         if (permissionCheck.hasPermission(item.getPermission())) {
             Map<String, Object> map = RequestUtils.getMapFromRequest(request);
             String body = RequestUtils.getBodyFromRequest(request);
-            ResultSet set = sqlExecutor.exec(item, map, body);
-            return new OkResult<>(ResultSetUtils.toMapList(set));
+            return sqlExecutor.exec(item, map, body);
         } else {
             return new FailResult<>(ResultCode.FAILURE_UNAVAILABLE);
         }
@@ -76,7 +75,7 @@ public class ApiController {
     @Operation(summary = "Post接口")
     @LogIt(message = "", handler = ApiPostLogHandler.class)
     @PostMapping("/{label}/{api}")
-    public BaseResult<String> post(
+    public BaseResult<?> post(
             @Parameter(name = "标签") @PathVariable String label,
             @Parameter(name = "接口API") @PathVariable String api,
             HttpServletRequest request) throws SQLException, JsonProcessingException {
@@ -91,11 +90,7 @@ public class ApiController {
         if (permissionCheck.hasPermission(item.getPermission())) {
             Map<String, Object> map = RequestUtils.getMapFromRequest(request);
             String body = RequestUtils.getBodyFromRequest(request);
-            if (sqlExecutor.update(item, map, body)) {
-                return OkResult.empty();
-            } else {
-                return FailResult.empty();
-            }
+            return sqlExecutor.exec(item, map, body);
         } else {
             return new FailResult<>(ResultCode.FAILURE_UNAVAILABLE);
         }
@@ -104,7 +99,7 @@ public class ApiController {
     @Operation(summary = "Put接口")
     @LogIt(message = "", handler = ApiPutLogHandler.class)
     @PutMapping("/{label}/{api}")
-    public BaseResult<String> put(
+    public BaseResult<?> put(
             @Parameter(name = "标签") @PathVariable String label,
             @Parameter(name = "接口API") @PathVariable String api,
             HttpServletRequest request) throws SQLException, JsonProcessingException {
@@ -112,18 +107,14 @@ public class ApiController {
         if (router == null) {
             return new FailResult<>(ResultCode.FAILURE_NO_LABEL);
         }
-        Item item = router.post(api);
+        Item item = router.put(api);
         if (item == null) {
             return new FailResult<>(ResultCode.FAILURE_NO_API);
         }
         if (permissionCheck.hasPermission(item.getPermission())) {
             Map<String, Object> map = RequestUtils.getMapFromRequest(request);
             String body = RequestUtils.getBodyFromRequest(request);
-            if (sqlExecutor.update(item, map, body)) {
-                return OkResult.empty();
-            } else {
-                return FailResult.empty();
-            }
+            return sqlExecutor.exec(item, map, body);
         } else {
             return new FailResult<>(ResultCode.FAILURE_UNAVAILABLE);
         }
@@ -132,7 +123,7 @@ public class ApiController {
     @Operation(summary = "Delete接口")
     @LogIt(message = "", handler = ApiDeleteLogHandler.class)
     @DeleteMapping("/{label}/{api}")
-    public BaseResult<String> delete(
+    public BaseResult<?> delete(
             @Parameter(name = "标签") @PathVariable String label,
             @Parameter(name = "接口API") @PathVariable String api,
             HttpServletRequest request) throws SQLException, JsonProcessingException {
@@ -140,18 +131,14 @@ public class ApiController {
         if (router == null) {
             return new FailResult<>(ResultCode.FAILURE_NO_LABEL);
         }
-        Item item = router.post(api);
+        Item item = router.delete(api);
         if (item == null) {
             return new FailResult<>(ResultCode.FAILURE_NO_API);
         }
         if (permissionCheck.hasPermission(item.getPermission())) {
             Map<String, Object> map = RequestUtils.getMapFromRequest(request);
             String body = RequestUtils.getBodyFromRequest(request);
-            if (sqlExecutor.update(item, map, body)) {
-                return OkResult.empty();
-            } else {
-                return FailResult.empty();
-            }
+            return sqlExecutor.exec(item, map, body);
         } else {
             return new FailResult<>(ResultCode.FAILURE_UNAVAILABLE);
         }

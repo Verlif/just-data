@@ -1,4 +1,4 @@
-package idea.verlif.justdata.controller;
+package idea.verlif.justdata.router;
 
 import idea.verlif.justdata.base.result.BaseResult;
 import idea.verlif.justdata.base.result.ResultCode;

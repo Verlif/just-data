@@ -77,7 +77,7 @@ public class UserController {
                 return new FailResult<>(ResultCode.FAILURE_LOGIN_FAIL);
             }
             Map<String, Object> map = RequestUtils.getMapFromRequest(request);
-            ResultSet set = sqlExecutor.exec(sql.getLabel(), sql.getSql(), map, user.toString());
+            ResultSet set = sqlExecutor.query(sql.getLabel(), sql.getSql(), map, user.toString());
             String key = ResultSetUtils.toString(set);
             if (key == null) {
                 return new FailResult<>(ResultCode.FAILURE_LOGIN_MISSING);
@@ -97,7 +97,7 @@ public class UserController {
                     // 权限赋值
                     if (permissionConfig.isEnabled() && permissionConfig.getQueryPermission().isEnabled()) {
                         sql = permissionConfig.getQueryPermission();
-                        ResultSet permissionSet = sqlExecutor.exec(sql.getLabel(), sql.getSql(), map, user.toString());
+                        ResultSet permissionSet = sqlExecutor.query(sql.getLabel(), sql.getSql(), map, user.toString());
                         List<String> pList = ResultSetUtils.toStringList(permissionSet);
                         loginUser.addPermission(pList);
                         userService.refreshLoginUser(loginUser);
