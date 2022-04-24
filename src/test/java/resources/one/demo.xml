@@ -51,5 +51,10 @@
             <method>GET</method>
             <sql>SELECT * FROM t_user WHERE id = #{id}</sql>
         </item>
+        <item name="直接SQL">
+            <api>sql</api>
+            <method>POST</method>
+            <sql>#{sql}</sql>
+        </item>
     </items>
 </info>

@@ -274,8 +274,7 @@ public class SqlExecutor {
 
         @Override
         public String handle(int i, String s, String s1) {
-            String de = encoder.encode(s1);
-            return de;
+            return encoder.encode(s1);
         }
     }
 }
