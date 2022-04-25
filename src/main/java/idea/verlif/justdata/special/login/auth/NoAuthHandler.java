@@ -16,7 +16,7 @@ public class NoAuthHandler implements AuthHandler {
 
     @Override
     public UserDetails auth(String id, String token) throws AuthenticationException {
-        LOGGER.error("no such AuthHandler can auth!");
+        LOGGER.error("No such AuthHandler can auth!");
         return null;
     }
 }

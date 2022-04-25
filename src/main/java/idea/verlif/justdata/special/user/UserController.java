@@ -72,7 +72,7 @@ public class UserController {
     public BaseResult<String> login(@RequestBody BaseUser user, HttpServletRequest request) throws SQLException, JsonProcessingException {
         if (loginConfig.isEnabled()) {
             Sql sql = loginConfig.getQueryUserKey();
-            if (sql.getSql() == null || sql.getLabel() == null) {
+            if (sql.getSql() == null || sql.getLabel() == null || user.getId() == null || user.getKey() == null) {
                 LOGGER.error("Lack of queryUser param!");
                 return new FailResult<>(ResultCode.FAILURE_LOGIN_FAIL);
             }

@@ -15,6 +15,7 @@ __数据库接口映射服务__
 - [内置接口文档](docs/内置接口文档.md)
 - [文件操作](docs/文件操作.md)
 - [项目结构说明](docs/项目结构.md)
+- [API接口日志自定义](docs/Api日志.md)
 
 ## 特点
 
@@ -65,7 +66,7 @@ __数据库接口映射服务__
 * [x] 动态更新操作项配置
 * [x] API列表展示更多的信息
 * [x] 文件上传与下载
-* [ ] 支持SQL语句流（开启事务）
+* [x] 支持SQL语句流（开启事务）
 * [ ] 支持外置jar包拓展
 * [ ] 数据库操作项自动生成
 * [x] 更自由的文本自定义
@@ -86,7 +87,6 @@ Just-data的配置基于`SpringBoot`，目前有两个配置文件：
 
 延续了`Station`的配置，包括了以下组件配置：
 
-* [ApiLogging](https://github.com/Verlif/logging-spring-boot-starter)
 * [FileService](https://github.com/Verlif/file-spring-boot-starter)
 * [TaskService](https://github.com/Verlif/task-spring-boot-starter)
 
@@ -94,6 +94,20 @@ Just-data的配置基于`SpringBoot`，目前有两个配置文件：
 
 ```yaml
 just-data:
+  # SQL配置
+  sql:
+    # 是否输出到控制台（true - 输出到控制台；false - 不输出）
+    print: true
+  # 接口日志处理
+  api-log:
+    # 日志类型（FILE - 写入文件；CONSOLE - 输出到控制台；XML - 通过xml配置写入数据库）（启用多个类型以“,”隔开，置为空则不启用接口日志）
+    type: FILE, XML
+    # 日志文件配置
+    file:
+      # 当日志类型为FILE时生效，表示写入的文件路径
+      log: log\api-log.log
+      # 当日志类型为XML时生效，表示读取的XML配置文件的路径
+      xml: src\test\java\resources\log\log.xml
   # Token配置
   token:
     # 解析的请求header参数名

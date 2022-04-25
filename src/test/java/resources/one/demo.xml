@@ -44,12 +44,95 @@
         <item name="删除用户">
             <api>delete</api>
             <method>DELETE</method>
-            <sql>DELETE FROM t_user WHERE id = #{id}</sql>
+            <sql>
+                INSERT INTO t_user (user_name, user_password, create_time) VALUES ('verlif', '123', now());
+                DELETE FROM t_user WHERE id = #{id}
+            </sql>
         </item>
         <item name="获取用户">
             <api>get</api>
             <method>GET</method>
-            <sql>SELECT * FROM t_user WHERE id = #{id}</sql>
+            <sql>
+                INSERT INTO t_user (user_name, user_password, create_time) VALUES ('verlif', '123', now());
+                SELECT * FROM t_user WHERE id = #{id};
+                SELECT * FROM t_user WHERE id = #{id};
+                SELECT * FROM t_user WHERE id = #{id};
+                SELECT * FROM t_user WHERE id = #{id};
+                SELECT * FROM t_user WHERE id = #{id};
+                SELECT * FROM t_user WHERE id = #{id};
+                SELECT * FROM t_user WHERE id = #{id};
+                SELECT * FROM t_user WHERE id = #{id};
+                SELECT * FROM t_user WHERE id = #{id};
+                SELECT * FROM t_user WHERE id = #{id};
+                SELECT * FROM t_user WHERE id = #{id};
+                SELECT * FROM t_user WHERE id = #{id};
+                SELECT * FROM t_user WHERE id = #{id};
+                SELECT * FROM t_user WHERE id = #{id};
+                SELECT * FROM t_user WHERE id = #{id};
+                SELECT * FROM t_user WHERE id = #{id};
+                SELECT * FROM t_user WHERE id = #{id};
+                SELECT * FROM t_user WHERE id = #{id};
+                SELECT * FROM t_user WHERE id = #{id};
+                SELECT * FROM t_user WHERE id = #{id};
+                SELECT * FROM t_user WHERE id = #{id};
+                SELECT * FROM t_user WHERE id = #{id};
+                SELECT * FROM t_user WHERE id = #{id};
+                SELECT * FROM t_user WHERE id = #{id};
+                SELECT * FROM t_user WHERE id = #{id};
+                SELECT * FROM t_user WHERE id = #{id};
+                SELECT * FROM t_user WHERE id = #{id};
+                SELECT * FROM t_user WHERE id = #{id};
+                SELECT * FROM t_user WHERE id = #{id};
+                SELECT * FROM t_user WHERE id = #{id};
+                SELECT * FROM t_user WHERE id = #{id};
+                SELECT * FROM t_user WHERE id = #{id};
+                SELECT * FROM t_user WHERE id = #{id};
+                SELECT * FROM t_user WHERE id = #{id};
+                SELECT * FROM t_user WHERE id = #{id};
+                SELECT * FROM t_user WHERE id = #{id};
+                SELECT * FROM t_user WHERE id = #{id};
+                SELECT * FROM t_user WHERE id = #{id};
+                SELECT * FROM t_user WHERE id = #{id};
+                SELECT * FROM t_user WHERE id = #{id};
+                SELECT * FROM t_user WHERE id = #{id};
+                SELECT * FROM t_user WHERE id = #{id};
+                SELECT * FROM t_user WHERE id = #{id};
+                SELECT * FROM t_user WHERE id = #{id};
+                SELECT * FROM t_user WHERE id = #{id};
+                SELECT * FROM t_user WHERE id = #{id};
+                SELECT * FROM t_user WHERE id = #{id};
+                SELECT * FROM t_user WHERE id = #{id};
+                SELECT * FROM t_user WHERE id = #{id};
+                SELECT * FROM t_user WHERE id = #{id};
+                SELECT * FROM t_user WHERE id = #{id};
+                SELECT * FROM t_user WHERE id = #{id};
+                SELECT * FROM t_user WHERE id = #{id};
+                SELECT * FROM t_user WHERE id = #{id};
+                SELECT * FROM t_user WHERE id = #{id};
+                SELECT * FROM t_user WHERE id = #{id};
+                SELECT * FROM t_user WHERE id = #{id};
+                SELECT * FROM t_user WHERE id = #{id};
+                SELECT * FROM t_user WHERE id = #{id};
+                SELECT * FROM t_user WHERE id = #{id};
+                SELECT * FROM t_user WHERE id = #{id};
+                SELECT * FROM t_user WHERE id = #{id};
+                SELECT * FROM t_user WHERE id = #{id};
+                SELECT * FROM t_user WHERE id = #{id};
+                SELECT * FROM t_user WHERE id = #{id};
+                SELECT * FROM t_user WHERE id = #{id};
+                SELECT * FROM t_user WHERE id = #{id};
+                SELECT * FROM t_user WHERE id = #{id};
+                SELECT * FROM t_user WHERE id = #{id};
+                SELECT * FROM t_user WHERE id = #{id};
+                SELECT * FROM t_user WHERE id = #{id};
+                SELECT * FROM t_user WHERE id = #{id};
+                SELECT * FROM t_user WHERE id = #{id};
+                SELECT * FROM t_user WHERE id = #{id};
+                SELECT * FROM t_user WHERE id = #{id};
+                SELECT * FROM t_user WHERE id = #{id};
+                SELECT * FROM t_user WHERE id = #{id};
+                SELECT * FROM t_user WHERE id = #{id}
+            </sql>
         </item>
         <item name="直接SQL">
             <api>sql</api>

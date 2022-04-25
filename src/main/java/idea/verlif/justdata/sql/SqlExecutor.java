@@ -41,6 +41,9 @@ public class SqlExecutor {
     private static final Logger LOGGER = LoggerFactory.getLogger(SqlExecutor.class);
 
     @Autowired
+    private SqlConfig sqlConfig;
+
+    @Autowired
     private DataSource dataSource;
 
     @Autowired
@@ -78,43 +81,47 @@ public class SqlExecutor {
      */
     public BaseResult<?> exec(Item item, Map<String, Object> map, String body) throws JsonProcessingException, SQLException {
         // sql变量替换
-        String sql = parserSql(item.getSql(), map, body);
+        String[] sqls = parserSql(item.getSql(), map, body).split(";");
         // 切换数据源
         DataSourceUtils.switchDB(item);
         // 获取数据库连接
         Connection connection = getConnect(item);
         Statement statement = connection.createStatement();
-        if (statement.execute(sql)) {
-            return new OkResult<>(ResultSetUtils.toMapList(statement.getResultSet()));
-        } else {
-            if (statement.getUpdateCount() > 0) {
-                return OkResult.empty();
-            } else {
-                return FailResult.empty();
+        try {
+            for (int i = 0; i < sqls.length; i++) {
+                String sql = sqls[i];
+                boolean b = statement.execute(sql);
+                // 只对最后一个SQL进行返回值判定
+                if (i == sqls.length - 1) {
+                    connection.commit();
+                    if (b) {
+                        return new OkResult<>(ResultSetUtils.toMapList(statement.getResultSet()));
+                    } else {
+                        if (statement.getUpdateCount() > 0) {
+                            return OkResult.empty();
+                        } else {
+                            return FailResult.empty();
+                        }
+                    }
+                }
             }
+            return OkResult.empty();
+        } catch (Exception e) {
+            connection.rollback();
+            throw e;
         }
     }
 
     /**
      * 执行查询操作项
      *
-     * @param item 操作项
-     * @param map  操作项参数
-     * @param body 请求内容
+     * @param label 使用的数据库label
+     * @param sql   sql语句
+     * @param map   sql参数
+     * @param body  请求内容
      * @return 查询结果
      * @throws SQLException 执行错误
      */
-    public ResultSet query(Item item, Map<String, Object> map, String body) throws SQLException, JsonProcessingException {
-        // sql变量替换
-        String sql = parserSql(item.getSql(), map, body);
-        // 切换数据源
-        DataSourceUtils.switchDB(item);
-        // 获取数据库连接
-        Connection connection = getConnect(item);
-        Statement statement = connection.createStatement();
-        return statement.executeQuery(sql);
-    }
-
     public ResultSet query(String label, String sql, Map<String, Object> map, String body) throws SQLException, JsonProcessingException {
         // sql变量替换
         sql = parserSql(sql, map, body);
@@ -123,26 +130,31 @@ public class SqlExecutor {
         // 获取数据库连接
         Connection connection = getConnect(label);
         Statement statement = connection.createStatement();
-        return statement.executeQuery(sql);
+        ResultSet rs = statement.executeQuery(sql);
+        connection.commit();
+        return rs;
     }
 
     /**
      * 更新操作项
      *
-     * @param item 操作项
-     * @param map  操作项参数
+     * @param label 使用的数据库label
+     * @param sql  sql语句
+     * @param map  sql参数
      * @param body 请求内容
      * @return 更新结果
      * @throws SQLException 执行错误
      */
-    public boolean update(Item item, Map<String, Object> map, String body) throws SQLException, JsonProcessingException {
+    public boolean update(String label, String sql, Map<String, Object> map, String body) throws SQLException, JsonProcessingException {
         // sql变量替换
-        String sql = parserSql(item.getSql(), map, body);
+        sql = parserSql(sql, map, body);
         // 切换数据源
-        DataSourceUtils.switchDB(item);
+        DataSourceUtils.switchDB(label);
         // 获取数据库连接
-        Connection connection = getConnect(item);
-        return connection.createStatement().executeUpdate(sql) > 0;
+        Connection connection = getConnect(label);
+        boolean b = connection.createStatement().executeUpdate(sql) > 0;
+        connection.commit();
+        return b;
     }
 
     /**
@@ -175,7 +187,9 @@ public class SqlExecutor {
         VarsContext encodeContext = new VarsContext(sql);
         encodeContext.setAreaTag("@ENCODE(", ")");
         sql = encodeContext.build(encoderReplaceHandler);
-        LOGGER.debug(sql);
+        if (sqlConfig.isPrint()) {
+            LOGGER.debug(sql);
+        }
         return sql;
     }
 
@@ -187,6 +201,9 @@ public class SqlExecutor {
         Connection connection = connectionMap.get(label);
         if (connection == null) {
             connection = dataSource.getConnection();
+            if (connection.getAutoCommit()) {
+                connection.setAutoCommit(false);
+            }
             connectionMap.put(label, connection);
         }
         return connection;

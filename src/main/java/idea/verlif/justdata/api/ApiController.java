@@ -1,20 +1,17 @@
 package idea.verlif.justdata.api;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import idea.verlif.justdata.base.constant.MethodConstant;
 import idea.verlif.justdata.base.result.BaseResult;
 import idea.verlif.justdata.base.result.ResultCode;
 import idea.verlif.justdata.base.result.ext.FailResult;
 import idea.verlif.justdata.item.Item;
-import idea.verlif.justdata.log.api.ApiDeleteLogHandler;
-import idea.verlif.justdata.log.api.ApiGetLogHandler;
-import idea.verlif.justdata.log.api.ApiPostLogHandler;
-import idea.verlif.justdata.log.api.ApiPutLogHandler;
+import idea.verlif.justdata.log.ApiLogService;
 import idea.verlif.justdata.router.Router;
 import idea.verlif.justdata.router.RouterManager;
-import idea.verlif.justdata.sql.SqlExecutor;
 import idea.verlif.justdata.special.permission.PermissionCheck;
+import idea.verlif.justdata.sql.SqlExecutor;
 import idea.verlif.justdata.util.RequestUtils;
-import idea.verlif.spring.logging.api.LogIt;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -44,8 +41,10 @@ public class ApiController {
     @Autowired
     private PermissionCheck permissionCheck;
 
+    @Autowired
+    private ApiLogService apiLogService;
+
     @Operation(summary = "Get接口")
-    @LogIt(message = "", handler = ApiGetLogHandler.class)
     @GetMapping("/{label}/{api}")
     public BaseResult<?> get(
             @Parameter(name = "标签") @PathVariable String label,
@@ -62,6 +61,7 @@ public class ApiController {
         if (permissionCheck.hasPermission(item.getPermission())) {
             Map<String, Object> map = RequestUtils.getMapFromRequest(request);
             String body = RequestUtils.getBodyFromRequest(request);
+            apiLogService.logApi(label, api, MethodConstant.GET, map, body);
             return sqlExecutor.exec(item, map, body);
         } else {
             return new FailResult<>(ResultCode.FAILURE_UNAVAILABLE);
@@ -69,7 +69,6 @@ public class ApiController {
     }
 
     @Operation(summary = "Post接口")
-    @LogIt(message = "", handler = ApiPostLogHandler.class)
     @PostMapping("/{label}/{api}")
     public BaseResult<?> post(
             @Parameter(name = "标签") @PathVariable String label,
@@ -86,6 +85,7 @@ public class ApiController {
         if (permissionCheck.hasPermission(item.getPermission())) {
             Map<String, Object> map = RequestUtils.getMapFromRequest(request);
             String body = RequestUtils.getBodyFromRequest(request);
+            apiLogService.logApi(label, api, MethodConstant.POST, map, body);
             return sqlExecutor.exec(item, map, body);
         } else {
             return new FailResult<>(ResultCode.FAILURE_UNAVAILABLE);
@@ -93,7 +93,6 @@ public class ApiController {
     }
 
     @Operation(summary = "Put接口")
-    @LogIt(message = "", handler = ApiPutLogHandler.class)
     @PutMapping("/{label}/{api}")
     public BaseResult<?> put(
             @Parameter(name = "标签") @PathVariable String label,
@@ -110,6 +109,7 @@ public class ApiController {
         if (permissionCheck.hasPermission(item.getPermission())) {
             Map<String, Object> map = RequestUtils.getMapFromRequest(request);
             String body = RequestUtils.getBodyFromRequest(request);
+            apiLogService.logApi(label, api, MethodConstant.PUT, map, body);
             return sqlExecutor.exec(item, map, body);
         } else {
             return new FailResult<>(ResultCode.FAILURE_UNAVAILABLE);
@@ -117,7 +117,6 @@ public class ApiController {
     }
 
     @Operation(summary = "Delete接口")
-    @LogIt(message = "", handler = ApiDeleteLogHandler.class)
     @DeleteMapping("/{label}/{api}")
     public BaseResult<?> delete(
             @Parameter(name = "标签") @PathVariable String label,
@@ -134,6 +133,7 @@ public class ApiController {
         if (permissionCheck.hasPermission(item.getPermission())) {
             Map<String, Object> map = RequestUtils.getMapFromRequest(request);
             String body = RequestUtils.getBodyFromRequest(request);
+            apiLogService.logApi(label, api, MethodConstant.DELETE, map, body);
             return sqlExecutor.exec(item, map, body);
         } else {
             return new FailResult<>(ResultCode.FAILURE_UNAVAILABLE);
