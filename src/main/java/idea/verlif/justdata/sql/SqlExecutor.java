@@ -11,6 +11,7 @@ import idea.verlif.justdata.encrypt.rsa.RsaService;
 import idea.verlif.justdata.item.Item;
 import idea.verlif.justdata.macro.MacroManager;
 import idea.verlif.justdata.sql.exception.LackOfSqlParamException;
+import idea.verlif.justdata.sql.parser.SqlParser;
 import idea.verlif.justdata.util.DataSourceUtils;
 import idea.verlif.justdata.util.ResultSetUtils;
 import idea.verlif.parser.vars.VarsContext;
@@ -21,12 +22,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import javax.sql.DataSource;
-import java.sql.Connection;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
-import java.util.HashMap;
-import java.util.Map;
+import java.sql.*;
+import java.util.*;
 
 /**
  * Sql执行器
@@ -40,8 +37,15 @@ public class SqlExecutor {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(SqlExecutor.class);
 
+    private static final String PRE_START = "<*";
+
+    private static final String PRE_END = "*>";
+
     @Autowired
     private SqlConfig sqlConfig;
+
+    @Autowired
+    private SqlParser sqlParser;
 
     @Autowired
     private DataSource dataSource;
@@ -58,6 +62,7 @@ public class SqlExecutor {
     private final RsaReplaceHandler rsaReplaceHandler;
     private final MacroReplaceHandler macroReplaceHandler;
     private final EncoderReplaceHandler encoderReplaceHandler;
+    private final NoPreHandleVarHandler noPreHandleVarHandler;
 
     private final Map<String, Connection> connectionMap;
     private final ObjectMapper objectMapper;
@@ -68,6 +73,7 @@ public class SqlExecutor {
         this.rsaReplaceHandler = new RsaReplaceHandler();
         this.macroReplaceHandler = new MacroReplaceHandler();
         this.encoderReplaceHandler = new EncoderReplaceHandler();
+        this.noPreHandleVarHandler = new NoPreHandleVarHandler();
     }
 
     /**
@@ -79,25 +85,44 @@ public class SqlExecutor {
      * @return 执行结果
      * @throws SQLException 执行错误
      */
-    public BaseResult<?> exec(Item item, Map<String, Object> map, String body) throws JsonProcessingException, SQLException {
+    public BaseResult<?> exec(Item item, Map<String, Object> map, String body) throws Exception {
         // sql变量替换
         String[] sqls = parserSql(item.getSql(), map, body).split(";");
         // 切换数据源
         DataSourceUtils.switchDB(item);
-        // 获取数据库连接
-        Connection connection = getConnect(item);
-        Statement statement = connection.createStatement();
+        // FIXME: 这里可能会出现一个问题，就是当这个线程的事务还未提交时，另一个线程的事务后链接，但是先先提交，就会导致前一个线程的未处理完的事务被迫提交。
+        // 获取手动事务数据库连接
+        Connection connection = getManualConnect(item);
         try {
             for (int i = 0; i < sqls.length; i++) {
                 String sql = sqls[i];
-                boolean b = statement.execute(sql);
+                // 预处理
+                VarsContext context = new VarsContext(sql);
+                context.setAreaTag(PRE_START, PRE_END);
+                PreHandleReplaceHandler handler = new PreHandleReplaceHandler();
+                sql = context.build(handler);
+                // 对sql进行日志输出
+                if (sqlConfig.isPrint()) {
+                    LOGGER.debug(sql.replace("\n", ""));
+                }
+                PreparedStatement ps = connection.prepareStatement(sql);
+                List<String> list = handler.getObjects();
+                for (int j = 0; j < list.size(); j++) {
+                    ps.setObject(j + 1, list.get(j));
+                }
+                boolean b = ps.execute();
                 // 只对最后一个SQL进行返回值判定
                 if (i == sqls.length - 1) {
+                    // TODO: 这里的代码仅用作测试，记得删除
+                    if (map.get("ok") != null) {
+                        Thread.sleep(10000);
+                        throw new Exception();
+                    }
                     connection.commit();
                     if (b) {
-                        return new OkResult<>(ResultSetUtils.toMapList(statement.getResultSet()));
+                        return new OkResult<>(ResultSetUtils.toMapList(ps.getResultSet()));
                     } else {
-                        if (statement.getUpdateCount() > 0) {
+                        if (ps.getUpdateCount() > 0) {
                             return OkResult.empty();
                         } else {
                             return FailResult.empty();
@@ -122,7 +147,7 @@ public class SqlExecutor {
      * @return 查询结果
      * @throws SQLException 执行错误
      */
-    public ResultSet query(String label, String sql, Map<String, Object> map, String body) throws SQLException, JsonProcessingException {
+    public ResultSet query(String label, String sql, Map<String, Object> map, String body) throws Exception {
         // sql变量替换
         sql = parserSql(sql, map, body);
         // 切换数据源
@@ -130,31 +155,36 @@ public class SqlExecutor {
         // 获取数据库连接
         Connection connection = getConnect(label);
         Statement statement = connection.createStatement();
-        ResultSet rs = statement.executeQuery(sql);
-        connection.commit();
-        return rs;
+        // 预处理
+        VarsContext context = new VarsContext(sql);
+        context.setAreaTag(PRE_START, PRE_END);
+        sql = context.build(noPreHandleVarHandler);
+        return statement.executeQuery(sql);
     }
 
     /**
      * 更新操作项
      *
      * @param label 使用的数据库label
-     * @param sql  sql语句
-     * @param map  sql参数
-     * @param body 请求内容
+     * @param sql   sql语句
+     * @param map   sql参数
+     * @param body  请求内容
      * @return 更新结果
      * @throws SQLException 执行错误
      */
-    public boolean update(String label, String sql, Map<String, Object> map, String body) throws SQLException, JsonProcessingException {
+    public boolean update(String label, String sql, Map<String, Object> map, String body) throws Exception {
         // sql变量替换
         sql = parserSql(sql, map, body);
         // 切换数据源
         DataSourceUtils.switchDB(label);
         // 获取数据库连接
         Connection connection = getConnect(label);
-        boolean b = connection.createStatement().executeUpdate(sql) > 0;
-        connection.commit();
-        return b;
+        Statement statement = connection.createStatement();
+        // 预处理
+        VarsContext context = new VarsContext(sql);
+        context.setAreaTag(PRE_START, PRE_END);
+        sql = context.build(noPreHandleVarHandler);
+        return statement.executeUpdate(sql) > 0;
     }
 
     /**
@@ -164,33 +194,77 @@ public class SqlExecutor {
      * @return 解析后的sql
      * @throws JsonProcessingException 无法解析body
      */
-    private String parserSql(String sql, Map<String, Object> map, String body) throws JsonProcessingException {
-        // 变量替换
-        VarsContext paramContext = new VarsContext(sql);
-        paramContext.setAreaTag("#{", "}");
-        sql = paramContext.build(new ParamReplaceHandler(map));
+    private String parserSql(String sql, Map<String, Object> map, String body) throws Exception {
+        // 将Body转换成Json
+        JsonNode node;
         if (body != null && body.length() > 2) {
             // 将请求内容转换为json
-            JsonNode node = objectMapper.readTree(body);
+            node = objectMapper.readTree(body);
+        } else {
+            node = objectMapper.nullNode();
+        }
+        // 判断是否需要动态SQL解析
+        if (sqlParser.needParser(sql)) {
+            // 组合Body与Param变量
+            Map<String, Object> params = new HashMap<>(map);
+            Iterator<Map.Entry<String, JsonNode>> iterable = node.fields();
+            while (iterable.hasNext()) {
+                Map.Entry<String, JsonNode> entry = iterable.next();
+                params.put(entry.getKey(), entry.getValue());
+            }
+            // SQL动态语法解析
+            sql = sqlParser.parser(sql, params);
+        }
+        // Param变量替换
+        if (sql.contains("#{")) {
+            VarsContext paramContext = new VarsContext(sql);
+            paramContext.setAreaTag("#{", "}");
+            sql = paramContext.build(new ParamReplaceHandler(map));
+        }
+        // Body变量替换
+        if (sql.contains("@{")) {
             VarsContext bodyContext = new VarsContext(sql);
             sql = bodyContext.build(new BodyReplaceHandler(node));
         }
-        // 替换全局变量
-        VarsContext macroContext = new VarsContext(sql);
-        macroContext.setAreaTag("${", "}");
-        sql = macroContext.build(macroReplaceHandler);
+        // 全局变量替换
+        if (sql.contains("${")) {
+            VarsContext macroContext = new VarsContext(sql);
+            macroContext.setAreaTag("${", "}");
+            sql = macroContext.build(macroReplaceHandler);
+        }
         // 解码
-        VarsContext rsaContext = new VarsContext(sql);
-        rsaContext.setAreaTag("@DECRYPT(", ")");
-        sql = rsaContext.build(rsaReplaceHandler);
+        if (sql.contains("@DECRYPT(")) {
+            VarsContext rsaContext = new VarsContext(sql);
+            rsaContext.setAreaTag("@DECRYPT(", ")");
+            sql = rsaContext.build(rsaReplaceHandler);
+        }
         // 重编码
-        VarsContext encodeContext = new VarsContext(sql);
-        encodeContext.setAreaTag("@ENCODE(", ")");
-        sql = encodeContext.build(encoderReplaceHandler);
-        if (sqlConfig.isPrint()) {
-            LOGGER.debug(sql);
+        if (sql.contains("@ENCODE(")) {
+            VarsContext encodeContext = new VarsContext(sql);
+            encodeContext.setAreaTag("@ENCODE(", ")");
+            sql = encodeContext.build(encoderReplaceHandler);
         }
         return sql;
+    }
+
+    /**
+     * 获取手动提交事务的连接
+     *
+     * @param item 操作项
+     * @return 数据库连接
+     * @throws SQLException
+     */
+    private Connection getManualConnect(Item item) throws SQLException {
+        String key = item.getLabel() + ".tk";
+        Connection connection = connectionMap.get(key);
+        if (connection == null) {
+            connection = dataSource.getConnection();
+            if (connection.getAutoCommit()) {
+                connection.setAutoCommit(false);
+            }
+            connectionMap.put(key, connection);
+        }
+        return connection;
     }
 
     private Connection getConnect(Item item) throws SQLException {
@@ -201,12 +275,13 @@ public class SqlExecutor {
         Connection connection = connectionMap.get(label);
         if (connection == null) {
             connection = dataSource.getConnection();
-            if (connection.getAutoCommit()) {
-                connection.setAutoCommit(false);
-            }
             connectionMap.put(label, connection);
         }
         return connection;
+    }
+
+    private static String aroundVar(String var) {
+        return PRE_START + var + PRE_END;
     }
 
     private static final class ParamReplaceHandler implements VarsHandler {
@@ -225,9 +300,9 @@ public class SqlExecutor {
             s1 = ss[0];
             if (map.containsKey(s1)) {
                 Object o = map.get(s1);
-                return o.toString();
+                return aroundVar(o.toString());
             } else if (ss.length == 2) {
-                return ss[1];
+                return aroundVar(ss[1]);
             }
             throw new LackOfSqlParamException(s1);
         }
@@ -257,9 +332,9 @@ public class SqlExecutor {
                 val = val.get(s2);
             }
             if (val != null) {
-                return val.asText();
+                return aroundVar(val.asText());
             } else if (ss.length == 2) {
-                return ss[1];
+                return aroundVar(ss[1]);
             }
             throw new LackOfSqlParamException(s1);
         }
@@ -270,7 +345,7 @@ public class SqlExecutor {
         @Override
         public String handle(int i, String s, String s1) {
             String de = rsaService.decryptByPrivateKey(s1);
-            return (de == null || de.length() == 0) ? s1 : de;
+            return (de == null || de.length() == 0) ? aroundVar(s1) : aroundVar(de);
         }
     }
 
@@ -282,7 +357,7 @@ public class SqlExecutor {
             if (val == null) {
                 throw new LackOfSqlParamException(s1);
             } else {
-                return val;
+                return aroundVar(val);
             }
         }
     }
@@ -292,6 +367,33 @@ public class SqlExecutor {
         @Override
         public String handle(int i, String s, String s1) {
             return encoder.encode(s1);
+        }
+    }
+
+    private static final class PreHandleReplaceHandler implements VarsHandler {
+
+        private final List<String> objects;
+
+        public PreHandleReplaceHandler() {
+            objects = new ArrayList<>();
+        }
+
+        @Override
+        public String handle(int i, String s, String s1) {
+            objects.add(s1);
+            return "?";
+        }
+
+        public List<String> getObjects() {
+            return objects;
+        }
+    }
+
+    private static final class NoPreHandleVarHandler implements VarsHandler {
+
+        @Override
+        public String handle(int i, String s, String s1) {
+            return s1;
         }
     }
 }

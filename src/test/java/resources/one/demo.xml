@@ -54,84 +54,11 @@
             <method>GET</method>
             <sql>
                 INSERT INTO t_user (user_name, user_password, create_time) VALUES ('verlif', '123', now());
-                SELECT * FROM t_user WHERE id = #{id};
-                SELECT * FROM t_user WHERE id = #{id};
-                SELECT * FROM t_user WHERE id = #{id};
-                SELECT * FROM t_user WHERE id = #{id};
-                SELECT * FROM t_user WHERE id = #{id};
-                SELECT * FROM t_user WHERE id = #{id};
-                SELECT * FROM t_user WHERE id = #{id};
-                SELECT * FROM t_user WHERE id = #{id};
-                SELECT * FROM t_user WHERE id = #{id};
-                SELECT * FROM t_user WHERE id = #{id};
-                SELECT * FROM t_user WHERE id = #{id};
-                SELECT * FROM t_user WHERE id = #{id};
-                SELECT * FROM t_user WHERE id = #{id};
-                SELECT * FROM t_user WHERE id = #{id};
-                SELECT * FROM t_user WHERE id = #{id};
-                SELECT * FROM t_user WHERE id = #{id};
-                SELECT * FROM t_user WHERE id = #{id};
-                SELECT * FROM t_user WHERE id = #{id};
-                SELECT * FROM t_user WHERE id = #{id};
-                SELECT * FROM t_user WHERE id = #{id};
-                SELECT * FROM t_user WHERE id = #{id};
-                SELECT * FROM t_user WHERE id = #{id};
-                SELECT * FROM t_user WHERE id = #{id};
-                SELECT * FROM t_user WHERE id = #{id};
-                SELECT * FROM t_user WHERE id = #{id};
-                SELECT * FROM t_user WHERE id = #{id};
-                SELECT * FROM t_user WHERE id = #{id};
-                SELECT * FROM t_user WHERE id = #{id};
-                SELECT * FROM t_user WHERE id = #{id};
-                SELECT * FROM t_user WHERE id = #{id};
-                SELECT * FROM t_user WHERE id = #{id};
-                SELECT * FROM t_user WHERE id = #{id};
-                SELECT * FROM t_user WHERE id = #{id};
-                SELECT * FROM t_user WHERE id = #{id};
-                SELECT * FROM t_user WHERE id = #{id};
-                SELECT * FROM t_user WHERE id = #{id};
-                SELECT * FROM t_user WHERE id = #{id};
-                SELECT * FROM t_user WHERE id = #{id};
-                SELECT * FROM t_user WHERE id = #{id};
-                SELECT * FROM t_user WHERE id = #{id};
-                SELECT * FROM t_user WHERE id = #{id};
-                SELECT * FROM t_user WHERE id = #{id};
-                SELECT * FROM t_user WHERE id = #{id};
-                SELECT * FROM t_user WHERE id = #{id};
-                SELECT * FROM t_user WHERE id = #{id};
-                SELECT * FROM t_user WHERE id = #{id};
-                SELECT * FROM t_user WHERE id = #{id};
-                SELECT * FROM t_user WHERE id = #{id};
-                SELECT * FROM t_user WHERE id = #{id};
-                SELECT * FROM t_user WHERE id = #{id};
-                SELECT * FROM t_user WHERE id = #{id};
-                SELECT * FROM t_user WHERE id = #{id};
-                SELECT * FROM t_user WHERE id = #{id};
-                SELECT * FROM t_user WHERE id = #{id};
-                SELECT * FROM t_user WHERE id = #{id};
-                SELECT * FROM t_user WHERE id = #{id};
-                SELECT * FROM t_user WHERE id = #{id};
-                SELECT * FROM t_user WHERE id = #{id};
-                SELECT * FROM t_user WHERE id = #{id};
-                SELECT * FROM t_user WHERE id = #{id};
-                SELECT * FROM t_user WHERE id = #{id};
-                SELECT * FROM t_user WHERE id = #{id};
-                SELECT * FROM t_user WHERE id = #{id};
-                SELECT * FROM t_user WHERE id = #{id};
-                SELECT * FROM t_user WHERE id = #{id};
-                SELECT * FROM t_user WHERE id = #{id};
-                SELECT * FROM t_user WHERE id = #{id};
-                SELECT * FROM t_user WHERE id = #{id};
-                SELECT * FROM t_user WHERE id = #{id};
-                SELECT * FROM t_user WHERE id = #{id};
-                SELECT * FROM t_user WHERE id = #{id};
-                SELECT * FROM t_user WHERE id = #{id};
-                SELECT * FROM t_user WHERE id = #{id};
-                SELECT * FROM t_user WHERE id = #{id};
-                SELECT * FROM t_user WHERE id = #{id};
-                SELECT * FROM t_user WHERE id = #{id};
-                SELECT * FROM t_user WHERE id = #{id};
-                SELECT * FROM t_user WHERE id = #{id}
+                INSERT INTO t_user (user_name, user_password, create_time) VALUES ('verlif', '123', now());
+                SELECT * FROM t_user
+                {if test:"id!=null"}
+                    WHERE id = #{id}
+                {fi}
             </sql>
         </item>
         <item name="直接SQL">

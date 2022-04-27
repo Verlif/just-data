@@ -78,3 +78,35 @@ Just-data使用了BCryptPasswordEncoder作为密钥加密工具，这也表明�
 ```
 
 当密钥正确时即完成登录。
+
+## 动态SQL方法
+
+XML中的SQL支持类似Mybatis方式的动态SQL语法。据体支持的方法如下：
+
+- `if` - 推断布尔逻辑来判断是否使得其中的SQL语句出现。
+
+注意：
+
+- 所有的动态SQL方法中的变量请直接使用变量名，不需要类似与`url变量`与`body变量`做区分。例如在`url`中有一个`size=5`，而`body`中有一个`"name":"Verlif"`，在SQL语句中需要使用`#{size}`与`@{name}`，但是在动态SQL方法参数中就直接使用`size`与`name`即可。
+- 动态SQL语句暂不支持同名方法嵌套，例如`{if test:"userId=1"} {if test:"sex=1"} {fi} {fi}`两个`if`作为嵌套是不支持的，会出现解析错误。
+
+### if
+
+使用格式：
+
+```xml
+<sql>
+  SELECT * FROM t_user
+  {if test:"id!=null"}
+    WHERE user_id = #{id}
+  {fi}
+</sql>
+```
+
+其中`test`表示了推断逻辑，当其中的语句推断为真时，`WHERE user_id = #{id}`则会被添加到sql中，反之则不会添加。
+
+`test`参数支持`or`与`and`两个关键词（小写），但不支持`()`表达，`and`的优先级高于`or`，类似与以下方式：
+
+- `A and B` - A与B同时为真则为真。
+- `A and B or C` - A与B同时为真，或者C为真则为真。
+- `A or B and C` - A为真，或者B与C同时为真则为真。

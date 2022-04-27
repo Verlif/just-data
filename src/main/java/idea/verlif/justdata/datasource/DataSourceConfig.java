@@ -28,11 +28,16 @@ public class DataSourceConfig {
     @Autowired
     private ItemParserManager parserManager;
 
+    private final Map<Object, Object> dsMap;
+
+    public DataSourceConfig() {
+        dsMap = new HashMap<>();
+    }
+
     @Bean
     @Primary
     public DynamicDataSource dynamicDataSource() {
         Map<String, ItemParser> parserMap = parserManager.getParserMap();
-        Map<Object, Object> dsMap = new HashMap<>(parserMap.size());
         for (ItemParser parser : parserMap.values()) {
             List<DataSourceItem> sourceItems = parser.getDataSourceItemList();
             for (DataSourceItem sourceItem : sourceItems) {
@@ -49,4 +54,7 @@ public class DataSourceConfig {
         return new DynamicDataSource(dsMap);
     }
 
+    public DruidDataSource getDruidDataSource(String label) {
+        return (DruidDataSource) dsMap.get(label);
+    }
 }

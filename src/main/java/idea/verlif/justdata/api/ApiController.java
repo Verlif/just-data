@@ -49,7 +49,7 @@ public class ApiController {
     public BaseResult<?> get(
             @Parameter(name = "标签") @PathVariable String label,
             @Parameter(name = "接口API") @PathVariable String api,
-            HttpServletRequest request) throws SQLException, JsonProcessingException {
+            HttpServletRequest request) throws Exception {
         Router router = routerManager.getRouter(label);
         if (router == null) {
             return new FailResult<>(ResultCode.FAILURE_NO_LABEL);
@@ -73,7 +73,7 @@ public class ApiController {
     public BaseResult<?> post(
             @Parameter(name = "标签") @PathVariable String label,
             @Parameter(name = "接口API") @PathVariable String api,
-            HttpServletRequest request) throws SQLException, JsonProcessingException {
+            HttpServletRequest request) throws Exception {
         Router router = routerManager.getRouter(label);
         if (router == null) {
             return new FailResult<>(ResultCode.FAILURE_NO_LABEL);
@@ -97,7 +97,7 @@ public class ApiController {
     public BaseResult<?> put(
             @Parameter(name = "标签") @PathVariable String label,
             @Parameter(name = "接口API") @PathVariable String api,
-            HttpServletRequest request) throws SQLException, JsonProcessingException {
+            HttpServletRequest request) throws Exception {
         Router router = routerManager.getRouter(label);
         if (router == null) {
             return new FailResult<>(ResultCode.FAILURE_NO_LABEL);
@@ -121,7 +121,7 @@ public class ApiController {
     public BaseResult<?> delete(
             @Parameter(name = "标签") @PathVariable String label,
             @Parameter(name = "接口API") @PathVariable String api,
-            HttpServletRequest request) throws SQLException, JsonProcessingException {
+            HttpServletRequest request) throws Exception {
         Router router = routerManager.getRouter(label);
         if (router == null) {
             return new FailResult<>(ResultCode.FAILURE_NO_LABEL);

@@ -32,7 +32,7 @@ public class MacroManager {
 
     public String get(String key) {
         MarcoHandler handler = macroMap.get(key);
-        if (key == null) {
+        if (key == null || handler == null) {
             return null;
         }
         return handler.getValue();

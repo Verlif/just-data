@@ -71,7 +71,7 @@ public class ApiLogService {
                 if (sql != null) {
                     try {
                         sqlExecutor.update(sql.getLabel(), sql.getSql(), map, body);
-                    } catch (SQLException | JsonProcessingException e) {
+                    } catch (Exception e) {
                         e.printStackTrace();
                     }
                 }

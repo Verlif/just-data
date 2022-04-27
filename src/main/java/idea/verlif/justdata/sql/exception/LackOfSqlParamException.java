@@ -10,6 +10,7 @@ public class LackOfSqlParamException extends RuntimeException {
     private final String param;
 
     public LackOfSqlParamException(String param) {
+        super(param);
         this.param = param;
     }
 

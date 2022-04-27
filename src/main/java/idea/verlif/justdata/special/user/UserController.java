@@ -69,7 +69,7 @@ public class UserController {
 
     @Operation(summary = "用户登录", description = "当开启了登录配置后，登录接口生效")
     @PostMapping("/login")
-    public BaseResult<String> login(@RequestBody BaseUser user, HttpServletRequest request) throws SQLException, JsonProcessingException {
+    public BaseResult<String> login(@RequestBody BaseUser user, HttpServletRequest request) throws Exception {
         if (loginConfig.isEnabled()) {
             Sql sql = loginConfig.getQueryUserKey();
             if (sql.getSql() == null || sql.getLabel() == null || user.getId() == null || user.getKey() == null) {
