@@ -90,16 +90,6 @@ just-data:
 
 # Station配置
 station:
-  # 接口日志
-  api-log:
-    # 接口日志线程信息
-    pool-info:
-      # 是否以后台线程方式运行接口日志服务
-      enable: true
-      # 日志线程池最大线程数
-      max: 200
-      # 日志等待队列长度
-      length: 1000
   # 文件配置
   file:
     # 是否允许新上传的文件覆盖已有的同名文件。false则上传同名文件会被拒绝。

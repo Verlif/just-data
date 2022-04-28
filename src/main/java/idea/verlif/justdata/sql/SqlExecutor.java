@@ -6,6 +6,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import idea.verlif.justdata.base.result.BaseResult;
 import idea.verlif.justdata.base.result.ext.FailResult;
 import idea.verlif.justdata.base.result.ext.OkResult;
+import idea.verlif.justdata.datasource.connection.ConnectionHolder;
+import idea.verlif.justdata.datasource.connection.LockableConnection;
 import idea.verlif.justdata.encrypt.code.Encoder;
 import idea.verlif.justdata.encrypt.rsa.RsaService;
 import idea.verlif.justdata.item.Item;
@@ -21,7 +23,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import javax.sql.DataSource;
 import java.sql.*;
 import java.util.*;
 
@@ -48,7 +49,7 @@ public class SqlExecutor {
     private SqlParser sqlParser;
 
     @Autowired
-    private DataSource dataSource;
+    private ConnectionHolder connectionHolder;
 
     @Autowired
     private RsaService rsaService;
@@ -90,42 +91,35 @@ public class SqlExecutor {
         String[] sqls = parserSql(item.getSql(), map, body).split(";");
         // 切换数据源
         DataSourceUtils.switchDB(item);
-        // FIXME: 这里可能会出现一个问题，就是当这个线程的事务还未提交时，另一个线程的事务后链接，但是先先提交，就会导致前一个线程的未处理完的事务被迫提交。
         // 获取手动事务数据库连接
-        Connection connection = getManualConnect(item);
+        LockableConnection lc = getManualConnect(item);
+        Connection connection = lc.getConnection();
         try {
-            for (int i = 0; i < sqls.length; i++) {
-                String sql = sqls[i];
-                // 预处理
-                VarsContext context = new VarsContext(sql);
-                context.setAreaTag(PRE_START, PRE_END);
-                PreHandleReplaceHandler handler = new PreHandleReplaceHandler();
-                sql = context.build(handler);
-                // 对sql进行日志输出
-                if (sqlConfig.isPrint()) {
-                    LOGGER.debug(sql.replace("\n", ""));
-                }
-                PreparedStatement ps = connection.prepareStatement(sql);
-                List<String> list = handler.getObjects();
-                for (int j = 0; j < list.size(); j++) {
-                    ps.setObject(j + 1, list.get(j));
-                }
-                boolean b = ps.execute();
-                // 只对最后一个SQL进行返回值判定
-                if (i == sqls.length - 1) {
-                    // TODO: 这里的代码仅用作测试，记得删除
-                    if (map.get("ok") != null) {
-                        Thread.sleep(10000);
-                        throw new Exception();
+            if (sqls.length == 1) {
+                PreparedStatement ps = sqlToPre(sqls[0], connection);
+                if (ps.execute()) {
+                    return new OkResult<>(ResultSetUtils.toMapList(ps.getResultSet()));
+                } else {
+                    if (ps.getUpdateCount() == 0) {
+                        return FailResult.empty();
                     }
-                    connection.commit();
-                    if (b) {
-                        return new OkResult<>(ResultSetUtils.toMapList(ps.getResultSet()));
-                    } else {
-                        if (ps.getUpdateCount() > 0) {
-                            return OkResult.empty();
+                }
+            } else {
+                for (int i = 0; i < sqls.length; i++) {
+                    String sql = sqls[i];
+                    PreparedStatement ps = sqlToPre(sql, connection);
+                    boolean b = ps.execute();
+                    // 只对最后一个SQL进行返回值判定
+                    if (i == sqls.length - 1) {
+                        connection.commit();
+                        if (b) {
+                            return new OkResult<>(ResultSetUtils.toMapList(ps.getResultSet()));
                         } else {
-                            return FailResult.empty();
+                            if (ps.getUpdateCount() > 0) {
+                                return OkResult.empty();
+                            } else {
+                                return FailResult.empty();
+                            }
                         }
                     }
                 }
@@ -134,7 +128,27 @@ public class SqlExecutor {
         } catch (Exception e) {
             connection.rollback();
             throw e;
+        } finally {
+            lc.release();
         }
+    }
+
+    private PreparedStatement sqlToPre(String sql, Connection connection) throws SQLException {
+        // 预处理
+        VarsContext context = new VarsContext(sql);
+        context.setAreaTag(PRE_START, PRE_END);
+        PreHandleReplaceHandler handler = new PreHandleReplaceHandler();
+        sql = context.build(handler);
+        // 对sql进行日志输出
+        if (sqlConfig.isPrint()) {
+            LOGGER.debug(sql.replace("\n", ""));
+        }
+        PreparedStatement ps = connection.prepareStatement(sql);
+        List<String> list = handler.getObjects();
+        for (int j = 0; j < list.size(); j++) {
+            ps.setObject(j + 1, list.get(j));
+        }
+        return ps;
     }
 
     /**
@@ -152,13 +166,13 @@ public class SqlExecutor {
         sql = parserSql(sql, map, body);
         // 切换数据源
         DataSourceUtils.switchDB(label);
-        // 获取数据库连接
-        Connection connection = getConnect(label);
-        Statement statement = connection.createStatement();
         // 预处理
         VarsContext context = new VarsContext(sql);
         context.setAreaTag(PRE_START, PRE_END);
         sql = context.build(noPreHandleVarHandler);
+        // 获取数据库连接
+        Connection connection = getConnect(label);
+        Statement statement = connection.createStatement();
         return statement.executeQuery(sql);
     }
 
@@ -177,13 +191,13 @@ public class SqlExecutor {
         sql = parserSql(sql, map, body);
         // 切换数据源
         DataSourceUtils.switchDB(label);
-        // 获取数据库连接
-        Connection connection = getConnect(label);
-        Statement statement = connection.createStatement();
         // 预处理
         VarsContext context = new VarsContext(sql);
         context.setAreaTag(PRE_START, PRE_END);
         sql = context.build(noPreHandleVarHandler);
+        // 获取数据库连接
+        Connection connection = getConnect(label);
+        Statement statement = connection.createStatement();
         return statement.executeUpdate(sql) > 0;
     }
 
@@ -254,30 +268,16 @@ public class SqlExecutor {
      * @return 数据库连接
      * @throws SQLException
      */
-    private Connection getManualConnect(Item item) throws SQLException {
-        String key = item.getLabel() + ".tk";
-        Connection connection = connectionMap.get(key);
-        if (connection == null) {
-            connection = dataSource.getConnection();
-            if (connection.getAutoCommit()) {
-                connection.setAutoCommit(false);
-            }
-            connectionMap.put(key, connection);
-        }
-        return connection;
+    private LockableConnection getManualConnect(Item item) throws SQLException, InterruptedException {
+        return connectionHolder.getUnlockedConnection(item.getLabel());
     }
 
-    private Connection getConnect(Item item) throws SQLException {
+    private Connection getConnect(Item item) throws SQLException, InterruptedException {
         return getConnect(item.getLabel());
     }
 
-    private Connection getConnect(String label) throws SQLException {
-        Connection connection = connectionMap.get(label);
-        if (connection == null) {
-            connection = dataSource.getConnection();
-            connectionMap.put(label, connection);
-        }
-        return connection;
+    private Connection getConnect(String label) throws SQLException, InterruptedException {
+        return connectionHolder.getConnection(label);
     }
 
     private static String aroundVar(String var) {
