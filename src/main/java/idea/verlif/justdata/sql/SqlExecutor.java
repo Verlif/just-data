@@ -88,7 +88,7 @@ public class SqlExecutor {
      */
     public BaseResult<?> exec(Item item, Map<String, Object> map, String body) throws Exception {
         // sql变量替换
-        String[] sqls = parserSql(item.getSql(), map, body).split(";");
+        String[] sqls = parserSql(item.getSql(), map, body, item.getPreHandleInfo()).split(";");
         // 切换数据源
         DataSourceUtils.switchDB(item);
         // 获取手动事务数据库连接
@@ -163,7 +163,7 @@ public class SqlExecutor {
      */
     public ResultSet query(String label, String sql, Map<String, Object> map, String body) throws Exception {
         // sql变量替换
-        sql = parserSql(sql, map, body);
+        sql = parserSql(sql, map, body, null);
         // 切换数据源
         DataSourceUtils.switchDB(label);
         // 预处理
@@ -188,7 +188,7 @@ public class SqlExecutor {
      */
     public boolean update(String label, String sql, Map<String, Object> map, String body) throws Exception {
         // sql变量替换
-        sql = parserSql(sql, map, body);
+        sql = parserSql(sql, map, body, null);
         // 切换数据源
         DataSourceUtils.switchDB(label);
         // 预处理
@@ -208,7 +208,7 @@ public class SqlExecutor {
      * @return 解析后的sql
      * @throws JsonProcessingException 无法解析body
      */
-    private String parserSql(String sql, Map<String, Object> map, String body) throws Exception {
+    private String parserSql(String sql, Map<String, Object> map, String body, Item.PreHandleInfo info) throws Exception {
         // 将Body转换成Json
         JsonNode node;
         if (body != null && body.length() > 2) {
@@ -217,46 +217,45 @@ public class SqlExecutor {
         } else {
             node = objectMapper.nullNode();
         }
-        // 判断是否需要动态SQL解析
-        if (sqlParser.needParser(sql)) {
-            // 组合Body与Param变量
-            Map<String, Object> params = new HashMap<>(map);
-            Iterator<Map.Entry<String, JsonNode>> iterable = node.fields();
-            while (iterable.hasNext()) {
-                Map.Entry<String, JsonNode> entry = iterable.next();
-                params.put(entry.getKey(), entry.getValue());
+        // 组合Body与Param变量
+        Map<String, Object> params = new HashMap<>(map);
+        Iterator<Map.Entry<String, JsonNode>> iterable = node.fields();
+        while (iterable.hasNext()) {
+            Map.Entry<String, JsonNode> entry = iterable.next();
+            params.put(entry.getKey(), entry.getValue());
+        }
+        // SQL动态语法解析
+        sql = sqlParser.parser(sql, params);
+        if (info != null) {
+            // Param变量替换
+            if (info.isWithParam()) {
+                VarsContext paramContext = new VarsContext(sql);
+                paramContext.setAreaTag("#{", "}");
+                sql = paramContext.build(new ParamReplaceHandler(map));
             }
-            // SQL动态语法解析
-            sql = sqlParser.parser(sql, params);
-        }
-        // Param变量替换
-        if (sql.contains("#{")) {
-            VarsContext paramContext = new VarsContext(sql);
-            paramContext.setAreaTag("#{", "}");
-            sql = paramContext.build(new ParamReplaceHandler(map));
-        }
-        // Body变量替换
-        if (sql.contains("@{")) {
-            VarsContext bodyContext = new VarsContext(sql);
-            sql = bodyContext.build(new BodyReplaceHandler(node));
-        }
-        // 全局变量替换
-        if (sql.contains("${")) {
-            VarsContext macroContext = new VarsContext(sql);
-            macroContext.setAreaTag("${", "}");
-            sql = macroContext.build(macroReplaceHandler);
-        }
-        // 解码
-        if (sql.contains("@DECRYPT(")) {
-            VarsContext rsaContext = new VarsContext(sql);
-            rsaContext.setAreaTag("@DECRYPT(", ")");
-            sql = rsaContext.build(rsaReplaceHandler);
-        }
-        // 重编码
-        if (sql.contains("@ENCODE(")) {
-            VarsContext encodeContext = new VarsContext(sql);
-            encodeContext.setAreaTag("@ENCODE(", ")");
-            sql = encodeContext.build(encoderReplaceHandler);
+            // Body变量替换
+            if (info.isWithBody()) {
+                VarsContext bodyContext = new VarsContext(sql);
+                sql = bodyContext.build(new BodyReplaceHandler(node));
+            }
+            // 全局变量替换
+            if (info.isWithMacro()) {
+                VarsContext macroContext = new VarsContext(sql);
+                macroContext.setAreaTag("${", "}");
+                sql = macroContext.build(macroReplaceHandler);
+            }
+            // 解码
+            if (info.isWithEncrypt()) {
+                VarsContext rsaContext = new VarsContext(sql);
+                rsaContext.setAreaTag("@DECRYPT(", ")");
+                sql = rsaContext.build(rsaReplaceHandler);
+            }
+            // 重编码
+            if (info.isWithEncode()) {
+                VarsContext encodeContext = new VarsContext(sql);
+                encodeContext.setAreaTag("@ENCODE(", ")");
+                sql = encodeContext.build(encoderReplaceHandler);
+            }
         }
         return sql;
     }
@@ -282,6 +281,26 @@ public class SqlExecutor {
 
     private static String aroundVar(String var) {
         return PRE_START + var + PRE_END;
+    }
+
+    public static boolean withParamReplace(String sql) {
+        return sql.contains("#{");
+    }
+
+    public static boolean withBodyReplace(String sql) {
+        return sql.contains("@{");
+    }
+
+    public static boolean withMacroReplace(String sql) {
+        return sql.contains("${");
+    }
+
+    public static boolean withEncrypt(String sql) {
+        return sql.contains("@DECRYPT(");
+    }
+
+    public static boolean withEncode(String sql) {
+        return sql.contains("@ENCODE(");
     }
 
     private static final class ParamReplaceHandler implements VarsHandler {

@@ -25,8 +25,20 @@ public class IfPoint extends SqlPoint {
 
     private static final String[] COMPARE_SYM = new String[]{"<=", ">=", "!=", "<", "=", ">"};
 
-    public IfPoint(Map<String, Object> params) {
-        super(params);
+    public IfPoint() {}
+
+    public IfPoint(String sql, Map<String, Object> params) {
+        super(sql, params);
+    }
+
+    @Override
+    protected String startTag() {
+        return "if";
+    }
+
+    @Override
+    protected String endTag() {
+        return "fi";
     }
 
     @Override

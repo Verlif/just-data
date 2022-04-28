@@ -30,6 +30,9 @@ spring:
         # 配置一个连接在池中最小生存的时间，单位是毫秒
         minEvictableIdleTimeMillis: 300000
 
+server:
+  port: 8080
+
 # 基础日志配置
 logging:
   # 日志记录等级

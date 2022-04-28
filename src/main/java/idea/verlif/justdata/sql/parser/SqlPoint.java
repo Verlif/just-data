@@ -1,23 +1,53 @@
 package idea.verlif.justdata.sql.parser;
 
+import idea.verlif.parser.vars.VarsContext;
 import idea.verlif.parser.vars.VarsHandler;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 
 /**
  * @author Verlif
  * @version 1.0
  * @date 2022/4/26 9:09
  */
-public abstract class SqlPoint implements VarsHandler {
+public abstract class SqlPoint extends VarsContext implements VarsHandler {
 
     private static final String BLANK = " ";
 
     private final Map<String, Object> params;
 
-    public SqlPoint(Map<String, Object> params) {
+    public SqlPoint() {
+        super("");
+        this.params = new HashMap<>();
+    }
+
+    public SqlPoint(String sql, Map<String, Object> params) {
+        super(sql);
         this.params = params;
+
+        setAreaTag("{" + startTag(), getEndTag());
+    }
+
+    /**
+     * 方法左标识名称
+     * @return 方法的左标识名，例如 {code if}
+     */
+    protected abstract String startTag();
+
+    /**
+     * 方法右标识名称
+     * @return 方法的右标识名，例如 {code if}
+     */
+    protected abstract String endTag();
+
+    public String getEndTag() {
+        return "{" + endTag() + "}";
+    }
+
+    public SqlPoint newInstance(String sql, Map<String, Object> params) throws Exception {
+        return this.getClass().getConstructor(String.class, Map.class).newInstance(sql, params);
     }
 
     /**
@@ -30,6 +60,10 @@ public abstract class SqlPoint implements VarsHandler {
      * @throws Exception 解析时可能出现的异常
      */
     protected abstract String parser(String content, Map<String, Object> params, Map<String, String> attrs) throws Exception;
+
+    public String build() {
+        return build(this);
+    }
 
     @Override
     public String handle(int i, String s, String s1) {
@@ -74,5 +108,22 @@ public abstract class SqlPoint implements VarsHandler {
             }
         }
         return attrMap;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+        SqlPoint point = (SqlPoint) o;
+        return Objects.equals(params, point.params);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(params);
     }
 }

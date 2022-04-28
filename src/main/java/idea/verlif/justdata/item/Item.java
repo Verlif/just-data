@@ -1,5 +1,8 @@
 package idea.verlif.justdata.item;
 
+import idea.verlif.justdata.sql.SqlExecutor;
+import idea.verlif.justdata.sql.parser.SqlParser;
+
 import java.util.Locale;
 
 /**
@@ -40,6 +43,15 @@ public class Item {
      * 访问权限
      */
     private String permission;
+
+    /**
+     * 预处理信息
+     */
+    private final PreHandleInfo preHandleInfo;
+
+    public Item() {
+        preHandleInfo = new PreHandleInfo();
+    }
 
     public String getName() {
         return name;
@@ -83,6 +95,11 @@ public class Item {
 
     public void setSql(String sql) {
         this.sql = sql;
+        this.preHandleInfo.setWithParam(SqlExecutor.withParamReplace(sql));
+        this.preHandleInfo.setWithBody(SqlExecutor.withBodyReplace(sql));
+        this.preHandleInfo.setWithMacro(SqlExecutor.withMacroReplace(sql));
+        this.preHandleInfo.setWithEncrypt(SqlExecutor.withEncrypt(sql));
+        this.preHandleInfo.setWithEncode(SqlExecutor.withEncode(sql));
     }
 
     public String getPermission() {
@@ -91,6 +108,10 @@ public class Item {
 
     public void setPermission(String permission) {
         this.permission = permission;
+    }
+
+    public PreHandleInfo getPreHandleInfo() {
+        return preHandleInfo;
     }
 
     @Override
@@ -102,5 +123,59 @@ public class Item {
                 ", method='" + method + '\'' +
                 ", sql='" + sql + '\'' +
                 '}';
+    }
+
+    public static final class PreHandleInfo {
+
+        private boolean withParam;
+
+        private boolean withBody;
+
+        private boolean withMacro;
+
+        private boolean withEncrypt;
+
+        private boolean withEncode;
+
+        public boolean isWithParam() {
+            return withParam;
+        }
+
+        public void setWithParam(boolean withParam) {
+            this.withParam = withParam;
+        }
+
+        public boolean isWithBody() {
+            return withBody;
+        }
+
+        public void setWithBody(boolean withBody) {
+            this.withBody = withBody;
+        }
+
+        public boolean isWithMacro() {
+            return withMacro;
+        }
+
+        public void setWithMacro(boolean withMacro) {
+            this.withMacro = withMacro;
+        }
+
+        public boolean isWithEncrypt() {
+            return withEncrypt;
+        }
+
+        public void setWithEncrypt(boolean withEncrypt) {
+            this.withEncrypt = withEncrypt;
+        }
+
+        public boolean isWithEncode() {
+            return withEncode;
+        }
+
+        public void setWithEncode(boolean withEncode) {
+            this.withEncode = withEncode;
+        }
+
     }
 }
