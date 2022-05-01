@@ -7,7 +7,7 @@ spring:
   # Redis配置
   redis:
     # 是否使用redis替换内存缓存
-    enabled: true
+    enabled: false
     host: 127.0.0.1
     port: 6379
   # 数据库总配置

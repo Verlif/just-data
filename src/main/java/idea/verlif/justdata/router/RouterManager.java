@@ -3,6 +3,7 @@ package idea.verlif.justdata.router;
 import idea.verlif.justdata.item.Item;
 import idea.verlif.justdata.item.ItemParser;
 import idea.verlif.justdata.item.ItemParserManager;
+import idea.verlif.justdata.sql.SqlExecutor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -31,6 +32,9 @@ public class RouterManager implements ApplicationRunner {
     @Autowired
     private ItemParserManager parserManager;
 
+    @Autowired
+    private SqlExecutor sqlExecutor;
+
     private final Map<String, Router> routerMap;
 
     public RouterManager() {
@@ -51,6 +55,8 @@ public class RouterManager implements ApplicationRunner {
                 }
                 for (Item item : list) {
                     if (routerConfig.isAllowApi(item.getApi())) {
+                        // SQL预处理
+                        sqlExecutor.preExecutingItem(item);
                         router.addItem(item);
                     }
                 }

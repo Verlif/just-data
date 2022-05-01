@@ -23,7 +23,10 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.*;
 
 /**
@@ -38,9 +41,9 @@ public class SqlExecutor {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(SqlExecutor.class);
 
-    private static final String PRE_START = "<*";
+    private static final String PRE_START = "&lc&";
 
-    private static final String PRE_END = "*>";
+    private static final String PRE_END = "&rc&";
 
     @Autowired
     private SqlConfig sqlConfig;
@@ -60,16 +63,17 @@ public class SqlExecutor {
     @Autowired
     private MacroManager macroManager;
 
+
     private final RsaReplaceHandler rsaReplaceHandler;
     private final MacroReplaceHandler macroReplaceHandler;
     private final EncoderReplaceHandler encoderReplaceHandler;
     private final NoPreHandleVarHandler noPreHandleVarHandler;
 
-    private final Map<String, Connection> connectionMap;
+    private final Map<String, PreExecutingInfo> preExecutingInfoMap;
     private final ObjectMapper objectMapper;
 
     public SqlExecutor() {
-        this.connectionMap = new HashMap<>();
+        this.preExecutingInfoMap = new HashMap<>();
         this.objectMapper = new ObjectMapper();
         this.rsaReplaceHandler = new RsaReplaceHandler();
         this.macroReplaceHandler = new MacroReplaceHandler();
@@ -88,7 +92,7 @@ public class SqlExecutor {
      */
     public BaseResult<?> exec(Item item, Map<String, Object> map, String body) throws Exception {
         // sql变量替换
-        String[] sqls = parserSql(item.getSql(), map, body, item.getPreHandleInfo()).split(";");
+        String[] sqls = parserSql(turnToKey(item), item.getSql(), map, body).split(";");
         // 切换数据源
         DataSourceUtils.switchDB(item);
         // 获取手动事务数据库连接
@@ -97,7 +101,9 @@ public class SqlExecutor {
         try {
             if (sqls.length == 1) {
                 PreparedStatement ps = sqlToPre(sqls[0], connection);
-                if (ps.execute()) {
+                boolean b = ps.execute();
+                connection.commit();
+                if (b) {
                     return new OkResult<>(ResultSetUtils.toMapList(ps.getResultSet()));
                 } else {
                     if (ps.getUpdateCount() == 0) {
@@ -106,7 +112,10 @@ public class SqlExecutor {
                 }
             } else {
                 for (int i = 0; i < sqls.length; i++) {
-                    String sql = sqls[i];
+                    String sql = sqls[i].trim();
+                    if (sql.length() == 0) {
+                        continue;
+                    }
                     PreparedStatement ps = sqlToPre(sql, connection);
                     boolean b = ps.execute();
                     // 只对最后一个SQL进行返回值判定
@@ -115,10 +124,10 @@ public class SqlExecutor {
                         if (b) {
                             return new OkResult<>(ResultSetUtils.toMapList(ps.getResultSet()));
                         } else {
-                            if (ps.getUpdateCount() > 0) {
-                                return OkResult.empty();
-                            } else {
+                            if (ps.getUpdateCount() == 0) {
                                 return FailResult.empty();
+                            } else {
+                                return OkResult.empty();
                             }
                         }
                     }
@@ -139,12 +148,15 @@ public class SqlExecutor {
         context.setAreaTag(PRE_START, PRE_END);
         PreHandleReplaceHandler handler = new PreHandleReplaceHandler();
         sql = context.build(handler);
-        // 对sql进行日志输出
-        if (sqlConfig.isPrint()) {
-            LOGGER.debug(sql.replace("\n", ""));
-        }
         PreparedStatement ps = connection.prepareStatement(sql);
         List<String> list = handler.getObjects();
+        // 对sql进行日志输出
+        if (sqlConfig.isPrint()) {
+            LOGGER.debug("Sql    - " + sql.replace("\n", "").trim());
+            if (list.size() > 0) {
+                LOGGER.debug("Params - " + Arrays.toString(list.toArray()));
+            }
+        }
         for (int j = 0; j < list.size(); j++) {
             ps.setObject(j + 1, list.get(j));
         }
@@ -154,51 +166,41 @@ public class SqlExecutor {
     /**
      * 执行查询操作项
      *
-     * @param label 使用的数据库label
-     * @param sql   sql语句
-     * @param map   sql参数
-     * @param body  请求内容
+     * @param item 操作项
+     * @param map  sql参数
+     * @param body 请求内容
      * @return 查询结果
      * @throws SQLException 执行错误
      */
-    public ResultSet query(String label, String sql, Map<String, Object> map, String body) throws Exception {
+    public ResultSet query(Item item, Map<String, Object> map, String body) throws Exception {
         // sql变量替换
-        sql = parserSql(sql, map, body, null);
+        String sql = parserSql(turnToKey(item), item.getSql(), map, body);
         // 切换数据源
-        DataSourceUtils.switchDB(label);
-        // 预处理
-        VarsContext context = new VarsContext(sql);
-        context.setAreaTag(PRE_START, PRE_END);
-        sql = context.build(noPreHandleVarHandler);
+        DataSourceUtils.switchDB(item.getLabel());
         // 获取数据库连接
-        Connection connection = getConnect(label);
-        Statement statement = connection.createStatement();
-        return statement.executeQuery(sql);
+        Connection connection = getConnect(item.getLabel());
+        PreparedStatement ps = sqlToPre(sql, connection);
+        return ps.executeQuery();
     }
 
     /**
      * 更新操作项
      *
-     * @param label 使用的数据库label
-     * @param sql   sql语句
-     * @param map   sql参数
-     * @param body  请求内容
+     * @param item 操作项
+     * @param map  sql参数
+     * @param body 请求内容
      * @return 更新结果
      * @throws SQLException 执行错误
      */
-    public boolean update(String label, String sql, Map<String, Object> map, String body) throws Exception {
+    public boolean update(Item item, Map<String, Object> map, String body) throws Exception {
         // sql变量替换
-        sql = parserSql(sql, map, body, null);
+        String sql = parserSql(turnToKey(item), item.getSql(), map, body);
         // 切换数据源
-        DataSourceUtils.switchDB(label);
-        // 预处理
-        VarsContext context = new VarsContext(sql);
-        context.setAreaTag(PRE_START, PRE_END);
-        sql = context.build(noPreHandleVarHandler);
+        DataSourceUtils.switchDB(item.getLabel());
         // 获取数据库连接
-        Connection connection = getConnect(label);
-        Statement statement = connection.createStatement();
-        return statement.executeUpdate(sql) > 0;
+        Connection connection = getConnect(item.getLabel());
+        PreparedStatement ps = sqlToPre(sql, connection);
+        return ps.executeUpdate() > 0;
     }
 
     /**
@@ -208,7 +210,11 @@ public class SqlExecutor {
      * @return 解析后的sql
      * @throws JsonProcessingException 无法解析body
      */
-    private String parserSql(String sql, Map<String, Object> map, String body, Item.PreHandleInfo info) throws Exception {
+    private String parserSql(String key, String sql, Map<String, Object> map, String body) throws Exception {
+        PreExecutingInfo info = preExecutingInfoMap.get(key);
+        if (info == null) {
+            return sql;
+        }
         // 将Body转换成Json
         JsonNode node;
         if (body != null && body.length() > 2) {
@@ -225,37 +231,35 @@ public class SqlExecutor {
             params.put(entry.getKey(), entry.getValue());
         }
         // SQL动态语法解析
-        sql = sqlParser.parser(sql, params);
-        if (info != null) {
-            // Param变量替换
-            if (info.isWithParam()) {
-                VarsContext paramContext = new VarsContext(sql);
-                paramContext.setAreaTag("#{", "}");
-                sql = paramContext.build(new ParamReplaceHandler(map));
-            }
-            // Body变量替换
-            if (info.isWithBody()) {
-                VarsContext bodyContext = new VarsContext(sql);
-                sql = bodyContext.build(new BodyReplaceHandler(node));
-            }
-            // 全局变量替换
-            if (info.isWithMacro()) {
-                VarsContext macroContext = new VarsContext(sql);
-                macroContext.setAreaTag("${", "}");
-                sql = macroContext.build(macroReplaceHandler);
-            }
-            // 解码
-            if (info.isWithEncrypt()) {
-                VarsContext rsaContext = new VarsContext(sql);
-                rsaContext.setAreaTag("@DECRYPT(", ")");
-                sql = rsaContext.build(rsaReplaceHandler);
-            }
-            // 重编码
-            if (info.isWithEncode()) {
-                VarsContext encodeContext = new VarsContext(sql);
-                encodeContext.setAreaTag("@ENCODE(", ")");
-                sql = encodeContext.build(encoderReplaceHandler);
-            }
+        sql = sqlParser.parser(sql, params, info.getSqlPoints());
+        // Param变量替换
+        if (info.isWithParam()) {
+            VarsContext paramContext = new VarsContext(sql);
+            paramContext.setAreaTag("#{", "}");
+            sql = paramContext.build(new ParamReplaceHandler(map));
+        }
+        // Body变量替换
+        if (info.isWithBody()) {
+            VarsContext bodyContext = new VarsContext(sql);
+            sql = bodyContext.build(new BodyReplaceHandler(node));
+        }
+        // 全局变量替换
+        if (info.isWithMacro()) {
+            VarsContext macroContext = new VarsContext(sql);
+            macroContext.setAreaTag("${", "}");
+            sql = macroContext.build(macroReplaceHandler);
+        }
+        // 解码
+        if (info.isWithEncrypt()) {
+            VarsContext rsaContext = new VarsContext(sql);
+            rsaContext.setAreaTag("@DECRYPT(", ")");
+            sql = rsaContext.build(rsaReplaceHandler);
+        }
+        // 重编码
+        if (info.isWithEncode()) {
+            VarsContext encodeContext = new VarsContext(sql);
+            encodeContext.setAreaTag("@ENCODE(", ")");
+            sql = encodeContext.build(encoderReplaceHandler);
         }
         return sql;
     }
@@ -279,8 +283,27 @@ public class SqlExecutor {
         return connectionHolder.getConnection(label);
     }
 
-    private static String aroundVar(String var) {
+    /**
+     * 格式化变量，只要为SQL预处理提供转换值
+     *
+     * @param var 变量值
+     * @return 格式化后的变量
+     */
+    public static String aroundVar(String var) {
         return PRE_START + var + PRE_END;
+    }
+
+    /**
+     * 恢复变量值
+     *
+     * @param var 变量值
+     * @return 恢复后的变量值。当变量未被格式化时，返回原值。
+     */
+    public static String recoveryVar(String var) {
+        if (var.startsWith(PRE_START)) {
+            return var.substring(PRE_START.length(), var.length() - PRE_END.length());
+        }
+        return var;
     }
 
     public static boolean withParamReplace(String sql) {
@@ -303,7 +326,23 @@ public class SqlExecutor {
         return sql.contains("@ENCODE(");
     }
 
-    private static final class ParamReplaceHandler implements VarsHandler {
+    private String turnToKey(Item item) {
+        return item.getLabel() + "." + item.getApi();
+    }
+
+    public void preExecutingItem(Item item) {
+        String sql = item.getSql();
+        PreExecutingInfo info = new PreExecutingInfo();
+        info.setWithParam(SqlExecutor.withParamReplace(sql));
+        info.setWithBody(SqlExecutor.withBodyReplace(sql));
+        info.setWithMacro(SqlExecutor.withMacroReplace(sql));
+        info.setWithEncrypt(SqlExecutor.withEncrypt(sql));
+        info.setWithEncode(SqlExecutor.withEncode(sql));
+        info.getSqlPoints().addAll(sqlParser.needParser(sql));
+        preExecutingInfoMap.put(turnToKey(item), info);
+    }
+
+    private static final class ParamReplaceHandler extends SqlVarsHandler {
 
         private static final String SPLIT = ":";
 
@@ -314,20 +353,20 @@ public class SqlExecutor {
         }
 
         @Override
-        public String handle(int i, String s, String s1) {
-            String[] ss = s1.split(SPLIT, 2);
-            s1 = ss[0];
-            if (map.containsKey(s1)) {
-                Object o = map.get(s1);
-                return aroundVar(o.toString());
+        protected String handle(String content) {
+            String[] ss = content.split(SPLIT, 2);
+            content = ss[0];
+            if (map.containsKey(content)) {
+                Object o = map.get(content);
+                return o.toString();
             } else if (ss.length == 2) {
-                return aroundVar(ss[1]);
+                return ss[1];
             }
-            throw new LackOfSqlParamException(s1);
+            throw new LackOfSqlParamException(content);
         }
     }
 
-    private static final class BodyReplaceHandler implements VarsHandler {
+    private static final class BodyReplaceHandler extends SqlVarsHandler {
 
         private static final String SPLIT = ":";
         private static final String LINK_SPLIT = "\\.";
@@ -339,10 +378,10 @@ public class SqlExecutor {
         }
 
         @Override
-        public String handle(int i, String s, String s1) {
-            String[] ss = s1.split(SPLIT, 2);
-            s1 = ss[0];
-            String[] link = s1.split(LINK_SPLIT);
+        protected String handle(String content) {
+            String[] ss = content.split(SPLIT, 2);
+            content = ss[0];
+            String[] link = content.split(LINK_SPLIT);
             JsonNode val = node;
             for (String s2 : link) {
                 if (val == null) {
@@ -351,41 +390,41 @@ public class SqlExecutor {
                 val = val.get(s2);
             }
             if (val != null) {
-                return aroundVar(val.asText());
+                return val.asText();
             } else if (ss.length == 2) {
-                return aroundVar(ss[1]);
+                return ss[1];
             }
-            throw new LackOfSqlParamException(s1);
+            throw new LackOfSqlParamException(content);
         }
     }
 
-    private final class RsaReplaceHandler implements VarsHandler {
+    private final class RsaReplaceHandler extends SqlVarsHandler {
 
         @Override
-        public String handle(int i, String s, String s1) {
-            String de = rsaService.decryptByPrivateKey(s1);
-            return (de == null || de.length() == 0) ? aroundVar(s1) : aroundVar(de);
+        protected String handle(String content) {
+            String de = rsaService.decryptByPrivateKey(content);
+            return (de == null || de.length() == 0) ? content : de;
         }
     }
 
-    private final class MacroReplaceHandler implements VarsHandler {
+    private final class MacroReplaceHandler extends SqlVarsHandler {
 
         @Override
-        public String handle(int i, String s, String s1) {
-            String val = macroManager.get(s1);
+        protected String handle(String content) {
+            String val = macroManager.get(content);
             if (val == null) {
-                throw new LackOfSqlParamException(s1);
+                throw new LackOfSqlParamException(content);
             } else {
-                return aroundVar(val);
+                return val;
             }
         }
     }
 
-    private final class EncoderReplaceHandler implements VarsHandler {
+    private final class EncoderReplaceHandler extends SqlVarsHandler {
 
         @Override
-        public String handle(int i, String s, String s1) {
-            return encoder.encode(s1);
+        protected String handle(String content) {
+            return encoder.encode(content);
         }
     }
 

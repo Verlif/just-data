@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <info>
     <label>demo</label>
-    <sql>INSERT INTO t_log (content) VALUES (CONCAT('[', now(), '] [/#{log.label}/#{log.api}] - #{log.method} - params=[#{log.params}], body=[#{log.body}]'))</sql>
+    <sql>INSERT INTO t_log (content) VALUES (CONCAT('[', now(), '] [/', #{log.label}, '/', #{log.api}, '] - ', #{log.method}, ' - params=[', #{log.params}, '], body=[', #{log.body}, ']'))</sql>
 </info>

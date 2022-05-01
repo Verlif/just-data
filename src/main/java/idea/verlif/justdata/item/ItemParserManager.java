@@ -23,7 +23,8 @@ public class ItemParserManager {
     private final ItemConfig itemConfig;
     private final Map<String, ItemParser> parserMap;
 
-    public ItemParserManager(@Autowired ItemConfig itemConfig) {
+    public ItemParserManager(
+            @Autowired ItemConfig itemConfig) {
         this.parserMap = new HashMap<>();
 
         this.itemConfig = itemConfig;

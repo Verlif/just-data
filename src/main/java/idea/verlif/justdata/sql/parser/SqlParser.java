@@ -28,9 +28,11 @@ public class SqlParser {
         addSqlPoint(new IfPoint());
     }
 
-    public String parser(String sql, Map<String, Object> params) throws Exception {
-        Set<SqlPoint> pointSet = needParser(sql);
-        for (SqlPoint point : pointSet) {
+    public String parser(String sql, Map<String, Object> params, Set<SqlPoint> sqlPoints) throws Exception {
+        if (sqlPoints == null) {
+            sqlPoints = needParser(sql);
+        }
+        for (SqlPoint point : sqlPoints) {
             sql = point.newInstance(sql, params).build();
         }
         return sql;

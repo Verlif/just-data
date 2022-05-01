@@ -1,11 +1,13 @@
 package idea.verlif.justdata.special.permission;
 
-import idea.verlif.justdata.sql.Sql;
+import idea.verlif.justdata.item.Item;
+import idea.verlif.justdata.sql.SqlExecutor;
 import idea.verlif.justdata.util.XMLUtils;
 import org.dom4j.Document;
 import org.dom4j.Element;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Configuration;
 
@@ -35,15 +37,18 @@ public class PermissionConfig {
     /**
      * 获取用户密钥
      */
-    private Sql queryPermission;
+    private Item queryPermission;
 
     /**
      * 内置接口需要的权限
      */
     private String innerPermission;
 
+    @Autowired
+    private SqlExecutor sqlExecutor;
+
     public PermissionConfig() {
-        queryPermission = new Sql();
+        this.queryPermission = new Item();
     }
 
     public String getFile() {
@@ -57,7 +62,7 @@ public class PermissionConfig {
      */
     public boolean setFile(String file) {
         this.file = file;
-        if (file != null && file.length() > 0) {
+        if (file != null && file.length() > 0 && sqlExecutor != null) {
             File xml = new File(file);
             if (xml.isFile()) {
                 Document document = XMLUtils.load(xml);
@@ -90,7 +95,9 @@ public class PermissionConfig {
                     LOGGER.warn("Login xml need sql to verify user.");
                     return false;
                 }
+                queryPermission.setApi("special/permission");
                 queryPermission.setSql(sqlEl.getText().replace("\n", " "));
+                sqlExecutor.preExecutingItem(queryPermission);
                 return true;
             }
         }
@@ -105,12 +112,14 @@ public class PermissionConfig {
         this.enabled = enabled;
     }
 
-    public Sql getQueryPermission() {
+    public Item getQueryPermission() {
         return queryPermission;
     }
 
-    public void setQueryPermission(Sql queryPermission) {
+    public void setQueryPermission(Item queryPermission) {
         this.queryPermission = queryPermission;
+        this.queryPermission.setApi("special/permission");
+        this.sqlExecutor.preExecutingItem(queryPermission);
     }
 
     public String getInnerPermission() {

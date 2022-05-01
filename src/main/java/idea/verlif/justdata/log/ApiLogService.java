@@ -1,7 +1,6 @@
 package idea.verlif.justdata.log;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import idea.verlif.justdata.sql.Sql;
+import idea.verlif.justdata.item.Item;
 import idea.verlif.justdata.sql.SqlExecutor;
 import idea.verlif.justdata.util.FileUtils;
 import idea.verlif.justdata.util.XMLUtils;
@@ -15,7 +14,6 @@ import org.springframework.stereotype.Service;
 
 import javax.annotation.PostConstruct;
 import java.io.File;
-import java.sql.SQLException;
 import java.util.Date;
 import java.util.Map;
 
@@ -38,7 +36,7 @@ public class ApiLogService {
     @Autowired
     private SqlExecutor sqlExecutor;
 
-    private Sql sql;
+    private Item logItem;
 
     public void logApi(String label, String api, String method, Map<String, Object> map, String body) {
         long time = System.currentTimeMillis();
@@ -68,9 +66,9 @@ public class ApiLogService {
                 FileUtils.append(sb.append("\n").toString(), apiLogConfig.getLogFile());
             }
             if (apiLogConfig.onXml()) {
-                if (sql != null) {
+                if (logItem != null) {
                     try {
-                        sqlExecutor.update(sql.getLabel(), sql.getSql(), map, body);
+                        sqlExecutor.update(logItem, map, body);
                     } catch (Exception e) {
                         e.printStackTrace();
                     }
@@ -82,15 +80,17 @@ public class ApiLogService {
     @PostConstruct
     public void preLoadXml() {
         if (apiLogConfig.onXml()) {
-            this.sql = readSqlFromXml(apiLogConfig.getXmlFile());
-            if (this.sql == null) {
+            this.logItem = readItemFromXml(apiLogConfig.getXmlFile());
+            if (this.logItem == null) {
                 LOGGER.warn("Api log xml file can not be read!");
+            } else {
+                this.sqlExecutor.preExecutingItem(this.logItem);
             }
         }
     }
 
-    private Sql readSqlFromXml(File xml) {
-        if (this.sql == null) {
+    private Item readItemFromXml(File xml) {
+        if (this.logItem == null) {
             Document document = XMLUtils.load(xml);
             if (document == null) {
                 return null;
@@ -99,20 +99,21 @@ public class ApiLogService {
             if (root == null) {
                 return null;
             }
-            Sql sql = new Sql();
+            Item item = new Item();
             String labelStr = root.elementText("label");
             if (labelStr == null) {
                 return null;
             }
-            sql.setLabel(labelStr);
+            item.setLabel(labelStr);
             String sqlStr = root.elementText("sql");
             if (sqlStr == null) {
                 return null;
             }
-            sql.setSql(sqlStr);
-            this.sql = sql;
+            item.setSql(sqlStr);
+            item.setApi("api-log");
+            this.logItem = item;
         }
-        return this.sql;
+        return this.logItem;
     }
 
 }

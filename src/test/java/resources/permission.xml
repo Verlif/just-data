@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <permission>
     <!-- 是否开启权限配置 -->
-    <enabled>true</enabled>
+    <enabled>false</enabled>
     <!-- 权限配置使用的label -->
     <label>demo</label>
     <!-- 内置接口访问权限key -->

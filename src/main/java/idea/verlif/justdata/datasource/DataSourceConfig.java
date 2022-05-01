@@ -47,6 +47,10 @@ public class DataSourceConfig {
                 druidDataSource.setUsername(sourceItem.getUsername());
                 druidDataSource.setDriverClassName(sourceItem.getDriver());
                 druidDataSource.setName(sourceItem.getLabel());
+                // 设置失败重试次数
+                druidDataSource.setConnectionErrorRetryAttempts(3);
+                // 中止失败重试
+                druidDataSource.setBreakAfterAcquireFailure(true);
                 dsMap.put(sourceItem.getLabel(), druidDataSource);
             }
         }

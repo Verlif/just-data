@@ -1,11 +1,13 @@
 package idea.verlif.justdata.special.login;
 
-import idea.verlif.justdata.sql.Sql;
+import idea.verlif.justdata.item.Item;
+import idea.verlif.justdata.sql.SqlExecutor;
 import idea.verlif.justdata.util.XMLUtils;
 import org.dom4j.Document;
 import org.dom4j.Element;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Configuration;
 
@@ -35,10 +37,13 @@ public class LoginConfig {
     /**
      * 获取用户密钥
      */
-    private Sql queryUserKey;
+    private Item queryUserKey;
+
+    @Autowired
+    private SqlExecutor sqlExecutor;
 
     public LoginConfig() {
-        queryUserKey = new Sql();
+        queryUserKey = new Item();
     }
 
     public String getFile() {
@@ -52,7 +57,7 @@ public class LoginConfig {
      */
     public boolean setFile(String file) {
         this.file = file;
-        if (file != null && file.length() > 0) {
+        if (file != null && file.length() > 0 && sqlExecutor != null) {
             File xml = new File(file);
             if (xml.isFile()) {
                 Document document = XMLUtils.load(xml);
@@ -79,7 +84,9 @@ public class LoginConfig {
                     LOGGER.warn("Login xml need sql to verify user.");
                     return false;
                 }
+                queryUserKey.setApi("special/login");
                 queryUserKey.setSql(sqlEl.getText().replace("\n", " "));
+                sqlExecutor.preExecutingItem(queryUserKey);
                 return true;
             }
         }
@@ -94,12 +101,13 @@ public class LoginConfig {
         this.enabled = enabled;
     }
 
-    public Sql getQueryUserKey() {
+    public Item getQueryUserKey() {
         return queryUserKey;
     }
 
-    public void setQueryUserKey(Sql queryUserKey) {
+    public void setQueryUserKey(Item queryUserKey) {
         this.queryUserKey = queryUserKey;
+        this.queryUserKey.setApi("special/login");
+        this.sqlExecutor.preExecutingItem(queryUserKey);
     }
-
 }
