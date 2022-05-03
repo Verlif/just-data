@@ -98,17 +98,30 @@ XML中的SQL支持类似Mybatis方式的动态SQL语法。据体支持的方法�
 
 ```xml
 <sql>
-  SELECT * FROM t_user
-  {if test:"id!=null"}
+  SELECT * FROM user
+  {if test:"id != null AND id > 5"}
     WHERE user_id = #{id}
+  {elseif test:"name != null"}
+    WHERE username = #{name}
+  {elseif}
+    WHERE user_id > 10
   {fi}
 </sql>
 ```
 
+上面的语句可以表示为以下描述：
+
+```text
+SELECT * FROM user
+如果id参数不为空且id的值大于5时，则WHERE user_id = #{id}；
+否则当name参数不为空时，则WHERE username = #{name}；
+当上述条件都不成立时，则WHERE user_id > 10。
+```
+
 其中`test`表示了推断逻辑，当其中的语句推断为真时，`WHERE user_id = #{id}`则会被添加到sql中，反之则不会添加。
 
-`test`参数支持`or`与`and`两个关键词（小写），但不支持`()`表达，`and`的优先级高于`or`，类似与以下方式：
+`test`参数支持`OR`与`AND`两个关键词（大写），但不支持`()`表达，`AND`的优先级高于`OR`，类似与以下方式：
 
-- `A and B` - A与B同时为真则为真。
-- `A and B or C` - A与B同时为真，或者C为真则为真。
-- `A or B and C` - A为真，或者B与C同时为真则为真。
+- `A AND B` - A与B同时为真则为真。
+- `A AND B OR C` - A与B同时为真，或者C为真则为真。
+- `A OR B AND C` - A为真，或者B与C同时为真则为真。

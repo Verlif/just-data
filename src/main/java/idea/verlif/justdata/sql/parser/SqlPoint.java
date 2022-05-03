@@ -32,12 +32,14 @@ public abstract class SqlPoint extends VarsContext implements VarsHandler {
 
     /**
      * 方法左标识名称
+     *
      * @return 方法的左标识名，例如 {code if}
      */
     protected abstract String startTag();
 
     /**
      * 方法右标识名称
+     *
      * @return 方法的右标识名，例如 {code if}
      */
     protected abstract String endTag();
@@ -76,7 +78,13 @@ public abstract class SqlPoint extends VarsContext implements VarsHandler {
         return s;
     }
 
-    private Map<String, String> getAttrMap(String attrStr) {
+    /**
+     * 从动态语法的参数字符串中提取参数
+     *
+     * @param attrStr 参数字符串
+     * @return 参数map
+     */
+    public static Map<String, String> getAttrMap(String attrStr) {
         Map<String, String> attrMap = new HashMap<>();
         if (attrStr.length() == 0) {
             return attrMap;

@@ -50,8 +50,7 @@ public class SqlParser {
      * @return 是否需要解析
      */
     public Set<SqlPoint> needParser(String sql) {
-        VarsContext context = new VarsContext(sql);
-        context.setAreaTag("{", "}");
+        VarsContext context = new SqlPointVarsContext(sql);
         ParserParamHandler handler = new ParserParamHandler();
         context.build(handler);
         return handler.needParser;

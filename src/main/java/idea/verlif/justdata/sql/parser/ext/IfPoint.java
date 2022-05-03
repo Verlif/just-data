@@ -2,14 +2,16 @@ package idea.verlif.justdata.sql.parser.ext;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import idea.verlif.justdata.sql.parser.SqlPoint;
-import idea.verlif.justdata.util.MessagesUtils;
-import org.dom4j.Element;
+import idea.verlif.parser.vars.VarsContext;
+import idea.verlif.parser.vars.VarsHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 
 /**
@@ -24,11 +26,20 @@ public class IfPoint extends SqlPoint {
     private static final Logger LOGGER = LoggerFactory.getLogger(IfPoint.class);
 
     private static final String[] COMPARE_SYM = new String[]{"<=", ">=", "!=", "<", "=", ">"};
+    private static final String TAG = "&ATG&";
 
-    public IfPoint() {}
+    private final List<Map<String, String>> attrList;
+    private final ElseIfVarsHandler varsHandler;
+
+    public IfPoint() {
+        attrList = new ArrayList<>();
+        varsHandler = new ElseIfVarsHandler();
+    }
 
     public IfPoint(String sql, Map<String, Object> params) {
         super(sql, params);
+        attrList = new ArrayList<>();
+        varsHandler = new ElseIfVarsHandler();
     }
 
     @Override
@@ -43,26 +54,41 @@ public class IfPoint extends SqlPoint {
 
     @Override
     protected String parser(String content, Map<String, Object> params, Map<String, String> attrs) throws Exception {
-        String testStr = attrs.get("test");
-        if (testStr == null || testStr.length() == 0) {
-            return content;
-        } else {
-            // 不支持带有()的嵌套
-            String[] lines = testStr.split("or");
-            for (String line : lines) {
-                String[] tests = line.split("and");
-                int count = 0;
-                for (String test : tests) {
-                    if (test(test, params)) {
-                        count ++;
-                    }
-                }
-                if (count == tests.length) {
-                    return content;
-                }
+        attrList.add(attrs);
+        // 对if判定中的elseif判定进行顺序解析
+        VarsContext context = new VarsContext(content);
+        context.setAreaTag("{elseif", "}");
+        String after = context.build(varsHandler);
+        // 顺序判定
+        String[] ss = after.split(TAG);
+        for (int i = 0; i < attrList.size(); i++) {
+            // 获取判定条件
+            Map<String, String> maps = attrList.get(i);
+            String testStr = maps.get("test");
+            // 当判定条件为空时判定为true
+            if (testStr == null || testStr.length() == 0 || testLine(testStr, params)) {
+                return ss[i];
             }
         }
         return "";
+    }
+
+    private boolean testLine(String line, Map<String, Object> params) throws NoSuchFieldException, InvocationTargetException, NoSuchMethodException, IllegalAccessException {
+        // 不支持带有()的嵌套
+        String[] lines = line.split("OR");
+        for (String s : lines) {
+            String[] tests = s.split("AND");
+            int count = 0;
+            for (String test : tests) {
+                if (test(test, params)) {
+                    count++;
+                }
+            }
+            if (count == tests.length) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private boolean test(String language, Map<String, Object> params) throws NoSuchMethodException, InvocationTargetException, IllegalAccessException, NoSuchFieldException {
@@ -72,80 +98,36 @@ public class IfPoint extends SqlPoint {
             if (lo > -1) {
                 // 符号判定符
                 int po = 1 << i;
-                String[] keys = language.substring(0, lo).trim().split("\\.");
-                Object value = params.get(keys[0]);
-                for (int j = 1; j < keys.length; j++) {
-                    if (value == null) {
-                        break;
-                    }
-                    String key = keys[j];
-                    Class<?> cl = value.getClass();
-                    // 是否是方法
-                    if (key.endsWith("()")) {
-                        try {
-                            Method method = cl.getDeclaredMethod(key.substring(0, key.length() - 2));
-                            value = method.invoke(value);
-                            break;
-                        } catch (NoSuchMethodException e) {
-                            LOGGER.error("Can not parse text about " + key);
-                            throw e;
-                        } catch (InvocationTargetException | IllegalAccessException e) {
-                            LOGGER.error(key + " is ran with error");
-                            throw e;
-                        }
-                    } else {
-                        if (value instanceof JsonNode) {
-                            value = ((JsonNode) value).get(key);
-                        }
-                    }
-                }
+                Object left = parserObj(language.substring(0, lo).trim(), params);
                 // 比较值的字符串
-                String valStr = language.substring(lo + sym.length()).trim();
-                // 这两个判断可能是数值，也可能是字符串
-                if ((po & (4 | 16)) > 0) {
-                    // 是否是空值判断
-                    if ("null".equals(valStr) || "NULL".equals(valStr)) {
+                Object right = parserObj(language.substring(lo + sym.length()).trim(), params);
+                // 是否是空值判断
+                if (left == null || right == null) {
+                    if ((po & 4) > 0) {
                         // !=
-                        if ((po & 4) > 0) {
-                            return value != null;
-                        } else {
-                            // =
-                            return value == null;
-                        }
-                        // 字符串长度判定
-                    } else if ("''".equals(valStr)) {
-                        if (value == null) {
-                            return (po & 16) > 0;
-                        }
-                        String valueStr = value.toString();
-                        // !=
-                        if ((po & 4) > 0) {
-                            return valueStr.length() > 0;
-                        } else {
-                            // =
-                            return valueStr.length() == 0;
-                        }
-                        // 数值判定
+                        return left != right;
+                    } else if ((po & 16) > 0) {
+                        // =
+                        return left == right;
                     } else {
-                        if (value == null) {
-                            return false;
-                        }
-                        double val = Double.parseDouble(valStr);
-                        String valueStr = value.toString();
-                        // !=
-                        if ((po & 4) > 0) {
-                            return Double.parseDouble(valueStr) != val;
-                        } else {
-                            // =
-                            return Double.parseDouble(valueStr) == val;
-                        }
-                    }
-                } else {
-                    if (value == null) {
+                        // 其他的符号都无法进行空置判断
                         return false;
                     }
-                    double val = Double.parseDouble(valStr);
-                    double keyVal = Double.parseDouble(value.toString());
+                }
+                // 这两个判断可能是数值，也可能是字符串
+                if ((po & (4 | 16)) > 0) {
+                    // !=
+                    if ((po & 4) > 0) {
+                        return !left.equals(right);
+                    } else {
+                        // =
+                        return left.equals(right);
+                    }
+                } else if (left instanceof String || right instanceof String) {
+                    return false;
+                } else {
+                    double val = (double) left;
+                    double keyVal = (double) right;
                     switch (sym) {
                         case "<=":
                             return keyVal <= val;
@@ -161,5 +143,55 @@ public class IfPoint extends SqlPoint {
             }
         }
         return false;
+    }
+
+    private Object parserObj(String desc, Map<String, Object> objMap) throws NoSuchMethodException, InvocationTargetException, IllegalAccessException {
+        // 判定是否是数字
+        try {
+            return Double.parseDouble(desc);
+        } catch (NumberFormatException ignored) {
+        }
+        String[] keys = desc.split("\\.");
+        Object value = objMap.get(keys[0]);
+        // 判定是否是设定字符串
+        if (value == null) {
+            return null;
+        }
+        for (int j = 1; j < keys.length; j++) {
+            String key = keys[j];
+            Class<?> cl = value.getClass();
+            // 是否是方法
+            if (key.endsWith("()")) {
+                try {
+                    Method method = cl.getDeclaredMethod(key.substring(0, key.length() - 2));
+                    value = method.invoke(value);
+                    break;
+                } catch (NoSuchMethodException e) {
+                    LOGGER.error("Can not parse text about " + key);
+                    throw e;
+                } catch (InvocationTargetException | IllegalAccessException e) {
+                    LOGGER.error(key + " is ran with error");
+                    throw e;
+                }
+            } else {
+                if (value instanceof JsonNode) {
+                    value = ((JsonNode) value).get(key);
+                }
+            }
+            if (value == null) {
+                break;
+            }
+        }
+        return value == null || value instanceof String ? value : Double.valueOf(value.toString());
+    }
+
+    private final class ElseIfVarsHandler implements VarsHandler {
+
+        @Override
+        public String handle(int i, String s, String s1) {
+            Map<String, String> map = SqlPoint.getAttrMap(s1.trim());
+            attrList.add(map);
+            return TAG;
+        }
     }
 }
