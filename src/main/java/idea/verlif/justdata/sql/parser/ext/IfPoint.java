@@ -49,7 +49,12 @@ public class IfPoint extends SqlPoint {
 
     @Override
     protected String endTag() {
-        return "fi";
+        return "if";
+    }
+
+    @Override
+    public int order() {
+        return 1;
     }
 
     @Override
@@ -75,9 +80,9 @@ public class IfPoint extends SqlPoint {
 
     private boolean testLine(String line, Map<String, Object> params) throws NoSuchFieldException, InvocationTargetException, NoSuchMethodException, IllegalAccessException {
         // 不支持带有()的嵌套
-        String[] lines = line.split("OR");
+        String[] lines = line.split("OR|or");
         for (String s : lines) {
-            String[] tests = s.split("AND");
+            String[] tests = s.split("AND|and");
             int count = 0;
             for (String test : tests) {
                 if (test(test, params)) {
@@ -126,8 +131,8 @@ public class IfPoint extends SqlPoint {
                 } else if (left instanceof String || right instanceof String) {
                     return false;
                 } else {
-                    double val = (double) left;
-                    double keyVal = (double) right;
+                    double val = (double) right;
+                    double keyVal = (double) left;
                     switch (sym) {
                         case "<=":
                             return keyVal <= val;
@@ -143,46 +148,6 @@ public class IfPoint extends SqlPoint {
             }
         }
         return false;
-    }
-
-    private Object parserObj(String desc, Map<String, Object> objMap) throws NoSuchMethodException, InvocationTargetException, IllegalAccessException {
-        // 判定是否是数字
-        try {
-            return Double.parseDouble(desc);
-        } catch (NumberFormatException ignored) {
-        }
-        String[] keys = desc.split("\\.");
-        Object value = objMap.get(keys[0]);
-        // 判定是否是设定字符串
-        if (value == null) {
-            return null;
-        }
-        for (int j = 1; j < keys.length; j++) {
-            String key = keys[j];
-            Class<?> cl = value.getClass();
-            // 是否是方法
-            if (key.endsWith("()")) {
-                try {
-                    Method method = cl.getDeclaredMethod(key.substring(0, key.length() - 2));
-                    value = method.invoke(value);
-                    break;
-                } catch (NoSuchMethodException e) {
-                    LOGGER.error("Can not parse text about " + key);
-                    throw e;
-                } catch (InvocationTargetException | IllegalAccessException e) {
-                    LOGGER.error(key + " is ran with error");
-                    throw e;
-                }
-            } else {
-                if (value instanceof JsonNode) {
-                    value = ((JsonNode) value).get(key);
-                }
-            }
-            if (value == null) {
-                break;
-            }
-        }
-        return value == null || value instanceof String ? value : Double.valueOf(value.toString());
     }
 
     private final class ElseIfVarsHandler implements VarsHandler {

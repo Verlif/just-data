@@ -12,7 +12,23 @@
         <item name="getUserById">
             <api>user</api>
             <method>GET</method>
-            <sql>SELECT * FROM user WHERE user_id = #{userId:1}</sql>
+            <sql>
+                SELECT * FROM user
+                {trim prefix="WHERE" prefixOverrides="AND|and"}
+                    {if test="userId != null"}
+                        and user_id = #{userId:1}
+                    {elseif test="userIds != null"}
+                        user_id IN
+                        {foreach open="(" separator="," close=")" item="userId" collection="userIds"}
+                            #{userId}
+                        {foreach}
+                    {elseif test="username != null and username.length() > 2"}
+                        AND username = #{username}
+                    {elseif test="nickname != null AND nickname.length() > 2"}
+                        and nickname = #{nickname}
+                    {if}
+                {trim}
+            </sql>
         </item>
         <item name="addUser">
             <api>user</api>

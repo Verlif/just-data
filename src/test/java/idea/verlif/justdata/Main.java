@@ -2,6 +2,9 @@ package idea.verlif.justdata;
 
 import idea.verlif.justdata.util.RsaUtils;
 
+import java.util.HashMap;
+import java.util.Map;
+
 /**
  * @author Verlif
  * @version 1.0
@@ -10,8 +13,43 @@ import idea.verlif.justdata.util.RsaUtils;
 public class Main {
 
     public static void main(String[] args) throws Exception {
-        System.out.println(RsaUtils.encryptByPublicKey(
-                "123",
-                "MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQCHFT2wHI2YGDFvqjDy+FzQkbgDTmOemIaVW87ZytERcl9oHggi2Gc56PPY5iEXkO+urDf0vlZJXAkvv1Ak7HaS1jts2XSpQhd0gE+S/Wu9Yd1w1xa0XCdl6lxNBD+WP+KZGjaIylkbQRoWpuwggo8uLdyVskiyQ01wtcrnYjJpRwIDAQAB"));
+        Map<String, String> attrMap = getAttrMap(" open=\"(\" separator=\",\" close=\")\" item=\"userId\" collection=\"userIds\"");
+        for (String key : attrMap.keySet()) {
+            System.out.println(key + " - " + attrMap.get(key));
+        }
+    }
+    public static Map<String, String> getAttrMap(String attrStr) {
+        Map<String, String> attrMap = new HashMap<>();
+        char[] chars = attrStr.toCharArray();
+        boolean isKey = true, in = false;
+        String key = null;
+        StringBuilder sb = new StringBuilder();
+        for (char c : chars) {
+            if (isKey) {
+                if (c == '=') {
+                    isKey = false;
+                    key = sb.toString();
+                    sb.setLength(0);
+                } else if (c != ' ') {
+                    sb.append(c);
+                }
+            } else {
+                if (in) {
+                    if (c == '\"') {
+                        in = false;
+                        attrMap.put(key, sb.toString());
+                        sb.setLength(0);
+                        isKey = true;
+                    } else {
+                        sb.append(c);
+                    }
+                } else {
+                    if (c == '\"') {
+                        in = true;
+                    }
+                }
+            }
+        }
+        return attrMap;
     }
 }

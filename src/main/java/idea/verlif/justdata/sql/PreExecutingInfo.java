@@ -2,8 +2,7 @@ package idea.verlif.justdata.sql;
 
 import idea.verlif.justdata.sql.parser.SqlPoint;
 
-import java.util.HashSet;
-import java.util.Set;
+import java.util.ArrayList;
 
 /**
  * @author Verlif
@@ -21,10 +20,10 @@ public final class PreExecutingInfo {
 
     private boolean withEncode;
 
-    private final Set<SqlPoint> sqlPoints;
+    private final ArrayList<SqlPoint> sqlPoints;
 
     public PreExecutingInfo() {
-        sqlPoints = new HashSet<>();
+        sqlPoints = new ArrayList<>();
     }
 
     public boolean isWithParam() {
@@ -67,7 +66,7 @@ public final class PreExecutingInfo {
         this.withEncode = withEncode;
     }
 
-    public Set<SqlPoint> getSqlPoints() {
+    public ArrayList<SqlPoint> getSqlPoints() {
         return sqlPoints;
     }
 }

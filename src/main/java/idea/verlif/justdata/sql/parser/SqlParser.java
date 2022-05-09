@@ -1,14 +1,14 @@
 package idea.verlif.justdata.sql.parser;
 
+import idea.verlif.justdata.sql.parser.ext.ForeachPoint;
 import idea.verlif.justdata.sql.parser.ext.IfPoint;
+import idea.verlif.justdata.sql.parser.ext.TrimPoint;
+import idea.verlif.justdata.sql.parser.ext.WherePoint;
 import idea.verlif.parser.vars.VarsContext;
 import idea.verlif.parser.vars.VarsHandler;
 import org.springframework.stereotype.Component;
 
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 /**
  * @author Verlif
@@ -18,17 +18,22 @@ import java.util.Set;
 @Component
 public class SqlParser {
 
+    private static final PointSort POINT_SORT = new PointSort();
+
     private final Map<String, SqlPoint> pointMap;
-    private final Set<String> tagSet;
+    private final List<String> tagSet;
 
     public SqlParser() {
         pointMap = new HashMap<>();
-        tagSet = new HashSet<>();
+        tagSet = new ArrayList<>();
 
         addSqlPoint(new IfPoint());
+        addSqlPoint(new ForeachPoint());
+        addSqlPoint(new TrimPoint());
+        addSqlPoint(new WherePoint());
     }
 
-    public String parser(String sql, Map<String, Object> params, Set<SqlPoint> sqlPoints) throws Exception {
+    public String parser(String sql, Map<String, Object> params, ArrayList<SqlPoint> sqlPoints) throws Exception {
         if (sqlPoints == null) {
             sqlPoints = needParser(sql);
         }
@@ -49,11 +54,13 @@ public class SqlParser {
      * @param sql SQL语句
      * @return 是否需要解析
      */
-    public Set<SqlPoint> needParser(String sql) {
+    public ArrayList<SqlPoint> needParser(String sql) {
         VarsContext context = new SqlPointVarsContext(sql);
         ParserParamHandler handler = new ParserParamHandler();
         context.build(handler);
-        return handler.needParser;
+        ArrayList<SqlPoint> points = new ArrayList<>(handler.needParser);
+        points.sort(POINT_SORT);
+        return points;
     }
 
     private final class ParserParamHandler implements VarsHandler {
@@ -74,6 +81,14 @@ public class SqlParser {
 
         public Set<SqlPoint> isNeedParser() {
             return needParser;
+        }
+    }
+
+    private static final class PointSort implements Comparator<SqlPoint> {
+
+        @Override
+        public int compare(SqlPoint o1, SqlPoint o2) {
+            return o1.order() - o2.order();
         }
     }
 }

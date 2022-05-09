@@ -1,8 +1,13 @@
 package idea.verlif.justdata.sql.parser;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import idea.verlif.parser.vars.VarsContext;
 import idea.verlif.parser.vars.VarsHandler;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
@@ -13,6 +18,8 @@ import java.util.Objects;
  * @date 2022/4/26 9:09
  */
 public abstract class SqlPoint extends VarsContext implements VarsHandler {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(SqlPoint.class);
 
     private static final String BLANK = " ";
 
@@ -43,6 +50,13 @@ public abstract class SqlPoint extends VarsContext implements VarsHandler {
      * @return 方法的右标识名，例如 {code if}
      */
     protected abstract String endTag();
+
+    /**
+     * 排序权重。权重越大，判定越靠后。
+     *
+     * @return 排序权重
+     */
+    public abstract int order();
 
     public String getEndTag() {
         return "{" + endTag() + "}";
@@ -86,36 +100,77 @@ public abstract class SqlPoint extends VarsContext implements VarsHandler {
      */
     public static Map<String, String> getAttrMap(String attrStr) {
         Map<String, String> attrMap = new HashMap<>();
-        if (attrStr.length() == 0) {
-            return attrMap;
-        }
-        // 以空格为分隔符
-        String[] ss = attrStr.split(BLANK);
-        String lastKsy = null;
-        for (String s : ss) {
-            String pro = s.trim();
-            if (pro.length() > 0) {
-                String[] prop = s.split(":");
-                int length = prop.length == 2 ? prop[1].length() : prop[0].length();
-                if (prop.length == 2) {
-                    lastKsy = prop[0];
-                    attrMap.put(lastKsy, prop[1].substring(1, length));
-                } else if (lastKsy != null && length > 0) {
-                    if (prop[0].charAt(length - 1) == '\"') {
-                        attrMap.put(lastKsy, attrMap.get(lastKsy) + BLANK + prop[0].substring(0, length - 1));
+        char[] chars = attrStr.toCharArray();
+        boolean isKey = true, in = false;
+        String key = null;
+        StringBuilder sb = new StringBuilder();
+        for (char c : chars) {
+            if (isKey) {
+                if (c == '=') {
+                    isKey = false;
+                    key = sb.toString();
+                    sb.setLength(0);
+                } else if (c != ' ') {
+                    sb.append(c);
+                }
+            } else {
+                if (in) {
+                    if (c == '\"') {
+                        in = false;
+                        attrMap.put(key, sb.toString());
+                        sb.setLength(0);
+                        isKey = true;
                     } else {
-                        attrMap.put(lastKsy, attrMap.get(lastKsy) + BLANK + prop[0]);
+                        sb.append(c);
+                    }
+                } else {
+                    if (c == '\"') {
+                        in = true;
                     }
                 }
             }
         }
-        for (String key : attrMap.keySet()) {
-            String value = attrMap.get(key);
-            if (value.charAt(value.length() - 1) == '\"') {
-                attrMap.put(key, value.substring(0, value.length() - 1));
+        return attrMap;
+    }
+
+    protected Object parserObj(String desc, Map<String, Object> objMap) throws NoSuchMethodException, InvocationTargetException, IllegalAccessException {
+        // 判定是否是数字
+        try {
+            return Double.parseDouble(desc);
+        } catch (NumberFormatException ignored) {
+        }
+        String[] keys = desc.split("\\.");
+        Object value = objMap.get(keys[0]);
+        // 判定是否是设定字符串
+        if (value == null) {
+            return null;
+        }
+        for (int j = 1; j < keys.length; j++) {
+            String key = keys[j];
+            Class<?> cl = value.getClass();
+            // 是否是方法
+            if (key.endsWith("()")) {
+                try {
+                    Method method = cl.getDeclaredMethod(key.substring(0, key.length() - 2));
+                    value = method.invoke(value);
+                    break;
+                } catch (NoSuchMethodException e) {
+                    LOGGER.error("Can not parse text about " + key);
+                    throw e;
+                } catch (InvocationTargetException | IllegalAccessException e) {
+                    LOGGER.error(key + " is ran with error");
+                    throw e;
+                }
+            } else {
+                if (value instanceof JsonNode) {
+                    value = ((JsonNode) value).get(key);
+                }
+            }
+            if (value == null) {
+                break;
             }
         }
-        return attrMap;
+        return value == null || value instanceof String ? value : Double.valueOf(value.toString());
     }
 
     @Override

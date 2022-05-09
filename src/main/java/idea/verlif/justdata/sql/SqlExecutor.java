@@ -67,7 +67,6 @@ public class SqlExecutor {
     private final RsaReplaceHandler rsaReplaceHandler;
     private final MacroReplaceHandler macroReplaceHandler;
     private final EncoderReplaceHandler encoderReplaceHandler;
-    private final NoPreHandleVarHandler noPreHandleVarHandler;
 
     private final Map<String, PreExecutingInfo> preExecutingInfoMap;
     private final ObjectMapper objectMapper;
@@ -78,7 +77,6 @@ public class SqlExecutor {
         this.rsaReplaceHandler = new RsaReplaceHandler();
         this.macroReplaceHandler = new MacroReplaceHandler();
         this.encoderReplaceHandler = new EncoderReplaceHandler();
-        this.noPreHandleVarHandler = new NoPreHandleVarHandler();
     }
 
     /**
@@ -327,7 +325,7 @@ public class SqlExecutor {
     }
 
     private String turnToKey(Item item) {
-        return item.getLabel() + "." + item.getApi();
+        return item.getLabel() + "." + item.getApi() + "." + item.getMethod();
     }
 
     public void preExecutingItem(Item item) {

@@ -90,22 +90,24 @@ XML中的SQL支持类似Mybatis方式的动态SQL语法。据体支持的方法�
 注意：
 
 - 所有的动态SQL方法中的变量请直接使用变量名，不需要类似与`url变量`与`body变量`做区分。例如在`url`中有一个`size=5`，而`body`中有一个`"name":"Verlif"`，在SQL语句中需要使用`#{size}`与`@{name}`，但是在动态SQL方法参数中就直接使用`size`与`name`即可。
-- 动态SQL语句暂不支持同名方法嵌套，例如`{if test:"userId=1"} {if test:"sex=1"} {fi} {fi}`两个`if`作为嵌套是不支持的，会出现解析错误。
+- 动态SQL语句暂不支持同名方法嵌套，例如`{if test="userId=1"} {if test="sex=1"} {fi} {fi}`两个`if`作为嵌套是不支持的，会出现解析错误。
 
 ### if
 
-使用格式：
+使用条件来控制SQL语句片段是否生效。
+
+#### 举例
 
 ```xml
 <sql>
   SELECT * FROM user
-  {if test:"id != null AND id > 5"}
+  {if test="id != null AND id > 5"}
     WHERE user_id = #{id}
-  {elseif test:"name != null"}
+  {elseif test="name != null"}
     WHERE username = #{name}
   {elseif}
     WHERE user_id > 10
-  {fi}
+  {if}
 </sql>
 ```
 
@@ -118,10 +120,112 @@ SELECT * FROM user
 当上述条件都不成立时，则WHERE user_id > 10。
 ```
 
-其中`test`表示了推断逻辑，当其中的语句推断为真时，`WHERE user_id = #{id}`则会被添加到sql中，反之则不会添加。
+#### 说明
 
-`test`参数支持`OR`与`AND`两个关键词（大写），但不支持`()`表达，`AND`的优先级高于`OR`，类似与以下方式：
+`test`参数支持`OR`与`AND`两个关键词（大小写都可以，不允许混写），但暂不支持`()`表达，`AND`的优先级高于`OR`，类似与以下方式：
 
 - `A AND B` - A与B同时为真则为真。
 - `A AND B OR C` - A与B同时为真，或者C为真则为真。
 - `A OR B AND C` - A为真，或者B与C同时为真则为真。
+
+布尔表达式可以使用 __不带参数的Java方法__ ，例如：
+
+- `name != null AND name.length() > 2`表示name参数不为空且其值的长度大于2。
+
+### where
+
+简单的`where`区域，自动消除条件中的`and`和`or`（不区分大小写），当无条件时，不出现`where`关键词。
+
+#### 举例
+
+```xml
+<sql>
+    SELECT * FROM user
+    {where}
+        {if test="userId != null"}
+            and user_id = #{userId:1}
+        {elseif test="username != null and username.length() > 2"}
+            AND username = #{username}
+        {elseif test="nickname != null AND nickname.length() > 2"}
+            and nickname = #{nickname}
+        {if}
+    {where}
+</sql>
+```
+
+当`if`中的三个条件都不满足时，只执行`SELECT * FROM user`，当存在条件时，会消除无用的`AND`或`OR`前缀。
+
+#### 说明
+
+一般情况下，`where`会与`if`一起使用，便于避免SQL语句解析错误。
+
+### trim
+
+更全面的语句修复，通过trim的参数来消除前缀或后缀。
+
+#### 举例
+
+```xml
+<sql>
+    SELECT * FROM user
+    {trim prefix="WHERE" prefixOverrides="AND|and"}
+        {if test="userId != null"}
+            and user_id = #{userId:1}
+        {elseif test="userIds != null"}
+            user_id IN
+            {foreach open="(" separator="," close=")" item="userId" collection="userIds"}
+                #{userId}
+            {foreach}
+        {elseif test="username != null and username.length() > 2"}
+            AND username = #{username}
+        {elseif test="nickname != null AND nickname.length() > 2"}
+            and nickname = #{nickname}
+        {if}
+    {trim}
+</sql>
+```
+
+这里的`trim`方法就替代了`where`方法，并会消除`AND`和`and`前缀词。
+
+参数：
+
+- `prefix` - 语句的前缀词。当方法内无内容时，前缀词不会出现。
+- `prefixOverrides` - 需要消除的内容前缀，使用`|`符号进行分割，不会忽略`空格`。可以替代`where`。
+- `suffixOverrides` - 需要消除的内同后缀，使用`|`符号进行分割，不会忽略`空格`。可以替代`set`。
+
+### foreach
+
+用于数组拆分的场景，一般情况下用在`where in`中。
+
+#### 举例
+
+```xml
+<sql>
+    SELECT * FROM user
+    {trim prefix="WHERE" prefixOverrides="AND|and"}
+        {if test="userId != null"}
+            and user_id = #{userId:1}
+        {elseif test="userIds != null"}
+            user_id IN
+            {foreach open="(" separator="," close=")" item="userId" collection="userIds"}
+                #{userId}
+            {foreach}
+        {elseif test="username != null and username.length() > 2"}
+            AND username = #{username}
+        {elseif test="nickname != null AND nickname.length() > 2"}
+            and nickname = #{nickname}
+        {if}
+    {trim}
+</sql>
+```
+
+这里可以看出，当`userId`为空，且`userIds`不为空时，会执行`SELECT * FROM user WHERE user_id IN (?)`，这里的问号会表示为`userIds`数组。
+
+参数：
+
+- `open` - 左符号。
+- `close` - 右符号。
+- `separator` - 分隔符号，不忽略`空格`。
+- `item` - 数组的每一个参数值，可以在方法内通过`#{}`来使用。
+- `collection` - 需要遍历的参数，在`param`和`body`参数中获取，直接使用参数名即可。与`if`的`test`一样，允许使用参数描述，例如`user.hair`。
+- `index` - 当前的序号，从0开始，在方法内通过`#{}`来使用。
