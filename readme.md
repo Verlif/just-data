@@ -10,7 +10,7 @@ __数据库接口映射服务__
 
 - [一般流程创建演示](docs/一般流程说明.md)
 - [XML配置模板](docs/template/template.xml)
-- [SQL中使用变量参数](docs/操作项SQL格式规范.md)
+- [操作项SQL格式规范](docs/操作项SQL格式规范.md)
 - [登录与权限配置](docs/登录与权限.md)
 - [内置接口文档](docs/内置接口文档.md)
 - [文件操作](docs/文件操作.md)
