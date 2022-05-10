@@ -85,12 +85,17 @@ Just-data使用了BCryptPasswordEncoder作为密钥加密工具，这也表明�
 
 XML中的SQL支持类似Mybatis方式的动态SQL语法。据体支持的方法如下：
 
-- `if` - 推断布尔逻辑来判断是否使得其中的SQL语句出现。
+- [`if`](#if) - 推断布尔逻辑来判断是否使得其中的SQL语句出现。
+- [`where`](#where) - 消除方法内的AND或OR前缀，并根据判断自动添加where关键词。
+- [`trim`](#trim) - 更全面的语句修复，通过trim的参数来消除前缀或后缀。
+- [`foreach`](#foreach) - 遍历数组。
 
 注意：
 
 - 所有的动态SQL方法中的变量请直接使用变量名，不需要类似与`url变量`与`body变量`做区分。例如在`url`中有一个`size=5`，而`body`中有一个`"name":"Verlif"`，在SQL语句中需要使用`#{size}`与`@{name}`，但是在动态SQL方法参数中就直接使用`size`与`name`即可。
 - 动态SQL语句暂不支持同名方法嵌套，例如`{if test="userId=1"} {if test="sex=1"} {fi} {fi}`两个`if`作为嵌套是不支持的，会出现解析错误。
+
+------
 
 ### if
 
@@ -132,6 +137,8 @@ SELECT * FROM user
 
 - `name != null AND name.length() > 2`表示name参数不为空且其值的长度大于2。
 
+------
+
 ### where
 
 简单的`where`区域，自动消除条件中的`and`和`or`（不区分大小写），当无条件时，不出现`where`关键词。
@@ -158,6 +165,8 @@ SELECT * FROM user
 #### 说明
 
 一般情况下，`where`会与`if`一起使用，便于避免SQL语句解析错误。
+
+------
 
 ### trim
 
@@ -192,6 +201,8 @@ SELECT * FROM user
 - `prefix` - 语句的前缀词。当方法内无内容时，前缀词不会出现。
 - `prefixOverrides` - 需要消除的内容前缀，使用`|`符号进行分割，不会忽略`空格`。可以替代`where`。
 - `suffixOverrides` - 需要消除的内同后缀，使用`|`符号进行分割，不会忽略`空格`。可以替代`set`。
+
+------
 
 ### foreach
 
