@@ -12,5 +12,5 @@
         LEFT JOIN t_role_permission rp ON rp.permission_id = p.permission_id
         LEFT JOIN t_user_role ur ON ur.role_id = rp.role_id
         LEFT JOIN t_user u ON ur.user_id = u.id
-        WHERE u.user_name = '${userId}'</sql>
+        WHERE u.user_name = ${userId}</sql>
 </permission>

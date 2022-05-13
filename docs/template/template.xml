@@ -5,14 +5,14 @@
         <!-- 单个数据库信息，一个dbs下可以有多个不同名的db -->
         <db>
             <!-- 数据库标签，加载的同名数据标签只能存在数据库信息 -->
-            <label>test</label>
-            <!-- 数据库URL -->
+            <label>test，必填</label>
+            <!-- 数据库URL，必填 -->
             <url>jdbc:mysql://127.0.0.1:3306/test?useSSL=false&amp;useUnicode=true&amp;serverTimezone=Hongkong&amp;characterEncoding=utf8&amp;allowPublicKeyRetrieval=true</url>
-            <!-- 数据库用户名 -->
+            <!-- 数据库用户名，必填 -->
             <username>root</username>
-            <!-- 数据库密码 -->
+            <!-- 数据库密码，必填 -->
             <password>password</password>
-            <!-- 数据库驱动，一般情况下可以不填。当服务启动时出现未知驱动异常时，请添加此项。 -->
+            <!-- 数据库驱动，必填。与配置文件中的驱动列表对应。 -->
             <driver>com.mysql.cj.jdbc.Driver</driver>
         </db>
     </dbs>

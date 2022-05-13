@@ -1,9 +1,7 @@
 package idea.verlif.justdata.sql.parser.ext;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.util.ArrayIterator;
-import com.mysql.cj.xdevapi.JsonArray;
 import idea.verlif.justdata.sql.exception.LackOfSqlParamException;
 import idea.verlif.justdata.sql.parser.SqlPoint;
 

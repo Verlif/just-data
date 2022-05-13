@@ -108,7 +108,7 @@ public class Item {
                 ", api='" + api + '\'' +
                 ", method='" + method + '\'' +
                 ", sql='" + sql + '\'' +
+                ", permission='" + permission + '\'' +
                 '}';
     }
-
 }

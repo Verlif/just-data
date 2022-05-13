@@ -30,6 +30,11 @@ spring:
         # 配置一个连接在池中最小生存的时间，单位是毫秒
         minEvictableIdleTimeMillis: 300000
 
+springdoc:
+  api-docs:
+    # 是否开启openApi，在线上环境请使用 false
+    enabled: true
+
 server:
   port: 8080
 
@@ -40,6 +45,14 @@ logging:
     idea.verlif.justdata: DEBUG
 
 just-data:
+  macro:
+    file: config\macro.properties
+  # 需要加载的数据库驱动列表
+  drivers:
+      # 驱动名
+    - driverName: com.mysql.cj.jdbc.Driver
+      # 驱动文件地址
+      driverFile: drivers\mysql-connector-java-8.0.27.jar
   # SQL配置
   sql:
     # 是否输出到控制台（true - 输出到控制台；false - 不输出）

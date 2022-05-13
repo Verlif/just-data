@@ -2,5 +2,5 @@
 <login>
     <enabled>false</enabled>
     <label>demo</label>
-    <sql>SELECT user_password FROM t_user WHERE user_name = '@{id}'</sql>
+    <sql>SELECT user_password FROM t_user WHERE user_name = @{id}</sql>
 </login>

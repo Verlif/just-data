@@ -52,16 +52,12 @@ __数据库接口映射服务__
 * [x] 基础操作项加载
 * [x] 接口权限控制
 * [x] 接口日志
-* [ ] 支持多种数据库
+* [x] 支持多种数据库
 
-  * [x] MySql
-  * [ ] Sql Server
-  * [ ] Oracle
-  * [ ] PostgreSQL
-  * [ ] Sqlite
+  *目前使用的是`jdbc`方式加载外置驱动文件，所以理论上支持所有的`jdbc`方式的数据库。*
 
 * [x] 同时连接多个数据源
-* [ ] 外置驱动文件，减少程序大小
+* [x] 外置驱动文件，减少程序大小
 * [x] RSA加密支持
 * [x] 动态更新操作项配置
 * [x] API列表展示更多的信息
@@ -124,39 +120,15 @@ just-data:
     expireTime: 3600
   # 操作项配置
   items:
-    # 操作项文件夹读取路径（推荐相对路径）
-    path: src\test\java\resources\test
+    # 操作项配置文件路径
+    path: src\test\java\resources\one
   # 接口异常配置
   exception:
     # 接口异常输出方式（CONSOLE - 控制台；FILE - 独立文件；CLIENT - 客户端），多个方式以“,”隔开
     output: CONSOLE
     # 当output中存在FILE时生效
     file: log\exception.log
-  # 登录配置
-  login:
-    # 是否开启登录
-    enabled: true
-    # 获取用户的密钥
-    queryUserKey:
-      # 数据源label
-      label: demo
-      # 使用了与操作项相同的语法，只是这里需要SELECT出用户的密钥。
-      sql: "SELECT user_password FROM sys_user WHERE id = @{id}"
-  # 权限配置
-  permission:
-    # 是否开启权限
-    enabled: true
-    # 内置接口需要的权限key（值为空则不需要权限）
-    inner-permission: admin
-    queryPermission:
-      # 权限获取的数据源label
-      label: demo
-      # 权限获取sql语句。这里需要取得登录用户的所有权限key，可以使用${userId}变量来替换登录用户ID
-      sql: "SELECT permission
-        FROM t_permission p
-        LEFT JOIN t_role_permission rp ON rp.permission_id = p.permission_id
-        LEFT JOIN t_user_role ur ON ur.role_id = rp.role_id
-        WHERE ur.user_id = ${userId}"
+  # 文件系统配置
   file:
     # 是否开启文件系统
     enabled: true
@@ -166,6 +138,14 @@ just-data:
     uploadType: ID
     # 文件操作模式，控制用户的文件管理权限（ID - 只允许用户操作自己的ID文件域文件，配合uploadType(ID)使用；ALL - 无限制）
     downloadType: ID
+  # 登录配置
+  login:
+    # 登录配置的xml地址
+    file: src\test\java\resources\login.xml
+  # 权限服务配置
+  permission:
+    # 权限配置的xml地址
+    file: src\test\java\resources\permission.xml
 ```
 
 注：

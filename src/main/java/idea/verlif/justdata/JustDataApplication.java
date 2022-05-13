@@ -21,4 +21,5 @@ public class JustDataApplication {
     public static void main(String[] args) {
         SpringApplication.run(JustDataApplication.class, args);
     }
+
 }

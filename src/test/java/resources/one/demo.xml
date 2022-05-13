@@ -14,7 +14,7 @@
             <api>user</api>
             <method>GET</method>
             <permission>admin</permission>
-            <sql>SELECT * FROM t_user WHERE user_name = '@DECRYPT(#{userId})'</sql>
+            <sql>SELECT *, ${version} AS version FROM t_user WHERE user_name = #{userName}</sql>
         </item>
         <item name="获取个人信息">
             <api>userself</api>
@@ -57,7 +57,7 @@
                 SELECT * FROM t_user
                 {if test="id!=null"}
                     WHERE id = #{id}
-                {fi}
+                {if}
             </sql>
         </item>
         <item name="直接SQL">

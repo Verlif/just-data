@@ -1,6 +1,7 @@
 package idea.verlif.justdata.datasource;
 
 import com.alibaba.druid.pool.DruidDataSource;
+import idea.verlif.justdata.datasource.driver.DriverManager;
 import idea.verlif.justdata.item.ItemParser;
 import idea.verlif.justdata.item.ItemParserManager;
 import org.slf4j.Logger;
@@ -28,6 +29,9 @@ public class DataSourceConfig {
     @Autowired
     private ItemParserManager parserManager;
 
+    @Autowired
+    private DriverManager driverManager;
+
     private final Map<Object, Object> dsMap;
 
     public DataSourceConfig() {
@@ -51,6 +55,7 @@ public class DataSourceConfig {
                 druidDataSource.setConnectionErrorRetryAttempts(3);
                 // 中止失败重试
                 druidDataSource.setBreakAfterAcquireFailure(true);
+                druidDataSource.setDriver(driverManager.getDriver(sourceItem.getDriver()));
                 dsMap.put(sourceItem.getLabel(), druidDataSource);
             }
         }

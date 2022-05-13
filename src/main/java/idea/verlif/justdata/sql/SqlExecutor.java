@@ -90,7 +90,7 @@ public class SqlExecutor {
      */
     public BaseResult<?> exec(Item item, Map<String, Object> map, String body) throws Exception {
         // sql变量替换
-        String[] sqls = parserSql(turnToKey(item), item.getSql(), map, body).split(";");
+        String[] sqls = parserStr(turnToKey(item), item.getSql(), map, body).split(";");
         // 切换数据源
         DataSourceUtils.switchDB(item);
         // 获取手动事务数据库连接
@@ -172,7 +172,7 @@ public class SqlExecutor {
      */
     public ResultSet query(Item item, Map<String, Object> map, String body) throws Exception {
         // sql变量替换
-        String sql = parserSql(turnToKey(item), item.getSql(), map, body);
+        String sql = parserStr(turnToKey(item), item.getSql(), map, body);
         // 切换数据源
         DataSourceUtils.switchDB(item.getLabel());
         // 获取数据库连接
@@ -192,7 +192,7 @@ public class SqlExecutor {
      */
     public boolean update(Item item, Map<String, Object> map, String body) throws Exception {
         // sql变量替换
-        String sql = parserSql(turnToKey(item), item.getSql(), map, body);
+        String sql = parserStr(turnToKey(item), item.getSql(), map, body);
         // 切换数据源
         DataSourceUtils.switchDB(item.getLabel());
         // 获取数据库连接
@@ -202,16 +202,16 @@ public class SqlExecutor {
     }
 
     /**
-     * @param sql  sql
-     * @param map  sql参数
+     * @param str  需处理的字符串
+     * @param map  变量参数
      * @param body 请求内容
      * @return 解析后的sql
      * @throws JsonProcessingException 无法解析body
      */
-    private String parserSql(String key, String sql, Map<String, Object> map, String body) throws Exception {
+    public String parserStr(String key, String str, Map<String, Object> map, String body) throws Exception {
         PreExecutingInfo info = preExecutingInfoMap.get(key);
         if (info == null) {
-            return sql;
+            return str;
         }
         // 将Body转换成Json
         JsonNode node;
@@ -229,37 +229,37 @@ public class SqlExecutor {
             params.put(entry.getKey(), entry.getValue());
         }
         // SQL动态语法解析
-        sql = sqlParser.parser(sql, params, info.getSqlPoints());
+        str = sqlParser.parser(str, params, info.getSqlPoints());
         // Param变量替换
         if (info.isWithParam()) {
-            VarsContext paramContext = new VarsContext(sql);
+            VarsContext paramContext = new VarsContext(str);
             paramContext.setAreaTag("#{", "}");
-            sql = paramContext.build(new ParamReplaceHandler(map));
+            str = paramContext.build(new ParamReplaceHandler(map));
         }
         // Body变量替换
         if (info.isWithBody()) {
-            VarsContext bodyContext = new VarsContext(sql);
-            sql = bodyContext.build(new BodyReplaceHandler(node));
+            VarsContext bodyContext = new VarsContext(str);
+            str = bodyContext.build(new BodyReplaceHandler(node));
         }
         // 全局变量替换
         if (info.isWithMacro()) {
-            VarsContext macroContext = new VarsContext(sql);
+            VarsContext macroContext = new VarsContext(str);
             macroContext.setAreaTag("${", "}");
-            sql = macroContext.build(macroReplaceHandler);
+            str = macroContext.build(macroReplaceHandler);
         }
         // 解码
         if (info.isWithEncrypt()) {
-            VarsContext rsaContext = new VarsContext(sql);
+            VarsContext rsaContext = new VarsContext(str);
             rsaContext.setAreaTag("@DECRYPT(", ")");
-            sql = rsaContext.build(rsaReplaceHandler);
+            str = rsaContext.build(rsaReplaceHandler);
         }
         // 重编码
         if (info.isWithEncode()) {
-            VarsContext encodeContext = new VarsContext(sql);
+            VarsContext encodeContext = new VarsContext(str);
             encodeContext.setAreaTag("@ENCODE(", ")");
-            sql = encodeContext.build(encoderReplaceHandler);
+            str = encodeContext.build(encoderReplaceHandler);
         }
-        return sql;
+        return str;
     }
 
     /**
@@ -411,7 +411,7 @@ public class SqlExecutor {
         protected String handle(String content) {
             String val = macroManager.get(content);
             if (val == null) {
-                throw new LackOfSqlParamException(content);
+                return "";
             } else {
                 return val;
             }

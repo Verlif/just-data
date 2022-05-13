@@ -10,7 +10,7 @@
 * `#{}`表示了路径参数。例如`#{page}`就会从 __url路径__ 中寻找`page`参数，赋值到此处。
 * `@{}`表示了body取值。例如`@{username}`就会从 __request荷载的json数据__ 中寻找`username`的值，赋值到此处。
   * `@{}`支持json链取值，例如`@{school.classroom.student}`就会从跟节点的`school对象`中取`classroom对象`，再从`classroom对象`中取`student对象`。
-* `${}`表示了内置参数，通常与登录用户相关。可用的参数如下：
+* `${}`表示了内置参数，由动态参数与参数文件组成。参数文件配置后，优先使用配置文件中的值。可用的动态参数如下：
   * `${userId}`当前登录用户ID。这里的用户ID表示的是登录时传递的`id`数据，例如使用用户名与密码登录，这时`${userId}`就是表示了用户名。
 
 sql中的所有sql均会自动判断数据类型，一般情况下不需要增加诸如`''`这类字符串标识。
@@ -51,7 +51,7 @@ Just-data使用了BCryptPasswordEncoder作为密钥加密工具，这也表明�
 <item name="注册用户">
     <api>register</api>
     <method>POST</method>
-    <sql>INSERT INTO t_user (user_name, user_password, create_time) VALUES ('@{username}', '@ENCODE(@{password})', now())</sql>
+    <sql>INSERT INTO t_user (user_name, user_password, create_time) VALUES (@{username}, @ENCODE(@{password}), now())</sql>
 </item>
 ```
 

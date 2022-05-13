@@ -62,7 +62,8 @@ public class ApiController {
             Map<String, Object> map = RequestUtils.getMapFromRequest(request);
             String body = RequestUtils.getBodyFromRequest(request);
             apiLogService.logApi(label, api, MethodConstant.GET, map, body);
-            return sqlExecutor.exec(item, map, body);
+            BaseResult<?> br = sqlExecutor.exec(item, map, body);
+            return br;
         } else {
             return new FailResult<>(ResultCode.FAILURE_UNAVAILABLE);
         }

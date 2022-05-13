@@ -47,7 +47,7 @@
         <dependency>
             <groupId>org.springdoc</groupId>
             <artifactId>springdoc-openapi-ui</artifactId>
-            <version>1.6.7</version>
+            <version>1.6.8</version>
         </dependency>
 
         <!-- mybatis -->
@@ -79,13 +79,6 @@
             <groupId>io.jsonwebtoken</groupId>
             <artifactId>jjwt</artifactId>
             <version>0.9.1</version>
-        </dependency>
-
-        <!-- 驱动 -->
-        <!-- MySQL -->
-        <dependency>
-            <groupId>mysql</groupId>
-            <artifactId>mysql-connector-java</artifactId>
         </dependency>
 
         <!-- 变量解析器 -->
@@ -135,14 +128,14 @@
                 </executions>
             </plugin>
         </plugins>
-<!--        <resources>-->
-<!--            <resource>-->
-<!--                <directory>src\main\resources</directory>-->
-<!--                <excludes>-->
-<!--                    <exclude>application.yml</exclude>-->
-<!--                    <exclude>i18n\message.properties</exclude>-->
-<!--                </excludes>-->
-<!--            </resource>-->
-<!--        </resources>-->
+        <!--        <resources>-->
+        <!--            <resource>-->
+        <!--                <directory>src\main\resources</directory>-->
+        <!--                <excludes>-->
+        <!--                    <exclude>application.yml</exclude>-->
+        <!--                    <exclude>i18n\message.properties</exclude>-->
+        <!--                </excludes>-->
+        <!--            </resource>-->
+        <!--        </resources>-->
     </build>
 </project>
