@@ -5,11 +5,12 @@
             <label>local</label>
             <url>jdbc:mysql://127.0.0.1/just_station?useSSL=false&amp;useUnicode=true&amp;serverTimezone=Hongkong&amp;characterEncoding=utf8&amp;allowPublicKeyRetrieval=true</url>
             <username>root</username>
+            <driver>com.mysql.cj.jdbc.Driver</driver>
             <password>ac16508...</password>
         </db>
     </dbs>
     <items label="local">
-        <item name="getUserById">
+        <item name="获取用户信息">
             <api>user</api>
             <method>GET</method>
             <sql>

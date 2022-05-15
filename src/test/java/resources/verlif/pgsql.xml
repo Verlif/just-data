@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<info>
+    <dbs>
+        <db>
+            <label>pgsql</label>
+            <url>jdbc:postgresql://192.168.80.128:5432/test</url>
+            <driver>org.postgresql.Driver</driver>
+            <username>postgres</username>
+            <password>ac16508</password>
+        </db>
+    </dbs>
+    <items label="pgsql">
+        <item name="获取所有天气">
+            <api>weather</api>
+            <method>GET</method>
+            <sql>
+                SELECT * FROM weather
+            </sql>
+        </item>
+    </items>
+</info>
