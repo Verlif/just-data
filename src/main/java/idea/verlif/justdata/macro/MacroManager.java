@@ -1,18 +1,21 @@
 package idea.verlif.justdata.macro;
 
 import idea.verlif.justdata.macro.handler.UserIdMacro;
+import idea.verlif.spring.taskservice.TaskService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Configuration;
 
+import javax.annotation.PostConstruct;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.Reader;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
-import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * @author Verlif
@@ -25,14 +28,32 @@ public class MacroManager {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(MacroManager.class);
 
+    /**
+     * 全局变量文件路径
+     */
     private String file;
+
+    /**
+     * 是否自动刷新文件内容
+     */
+    private boolean autoReload;
+
+    /**
+     * 文件刷新间隔
+     */
+    private long period;
 
     private final Properties properties;
 
     private final Map<String, MarcoHandler> macroMap;
 
+    @Autowired
+    private TaskService taskService;
+
     public MacroManager() {
-        macroMap = new ConcurrentHashMap<>();
+        macroMap = new HashMap<>();
+        autoReload = true;
+        period = 2000;
         properties = new Properties();
 
         init();
@@ -44,21 +65,30 @@ public class MacroManager {
 
     public void setFile(String file) {
         this.file = file;
-        File propFile = new File(file);
-        if (propFile.exists() && propFile.isFile()) {
-            try (Reader reader = new FileReader(propFile)) {
-                properties.clear();
-                properties.load(reader);
-                LOGGER.info("Loaded macros from " + file);
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        }
     }
 
-    public void resetProperties() {
-        if (file != null) {
-            setFile(file);
+    public boolean isAutoReload() {
+        return autoReload;
+    }
+
+    public void setAutoReload(boolean autoReload) {
+        this.autoReload = autoReload;
+    }
+
+    public long getPeriod() {
+        return period;
+    }
+
+    public void setPeriod(long period) {
+        this.period = period;
+    }
+
+    @PostConstruct
+    public void checkReloadFile() {
+        if (file != null && autoReload) {
+            taskService.getSchedule().scheduleAtFixedRate(new ReloadMacroFile(), period);
+        } else {
+            new ReloadMacroFile().run();
         }
     }
 
@@ -88,4 +118,40 @@ public class MacroManager {
         return handler.getValue();
     }
 
+    private final class ReloadMacroFile implements Runnable {
+
+        private final File propFile;
+        private long last;
+
+        public ReloadMacroFile() {
+            if (file != null) {
+                File f = new File(file);
+                if (f.exists() && f.isFile()) {
+                    this.propFile = f;
+                } else {
+                    this.propFile = null;
+                }
+            } else {
+                this.propFile = null;
+            }
+            last = 0;
+        }
+
+        @Override
+        public void run() {
+            if (propFile != null) {
+                long nowTime = propFile.lastModified();
+                if (last != nowTime) {
+                    last = nowTime;
+                    try (Reader reader = new FileReader(propFile)) {
+                        properties.clear();
+                        properties.load(reader);
+                        LOGGER.info("Loaded macros from " + file);
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
+        }
+    }
 }

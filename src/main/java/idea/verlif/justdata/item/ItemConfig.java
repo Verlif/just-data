@@ -12,7 +12,24 @@ import org.springframework.context.annotation.Configuration;
 @ConfigurationProperties(prefix = "just-data.items")
 public class ItemConfig {
 
+    /**
+     * 操作项文件夹路径
+     */
     private String path = "./";
+
+    /**
+     * 文件变更后是否自动重载操作项
+     */
+    private boolean autoReload;
+
+    /**
+     * 操作项文件重载时间间隔
+     */
+    private long period;
+
+    public ItemConfig() {
+        period = 2000;
+    }
 
     public String getPath() {
         return path;
@@ -20,5 +37,21 @@ public class ItemConfig {
 
     public void setPath(String path) {
         this.path = path;
+    }
+
+    public boolean isAutoReload() {
+        return autoReload;
+    }
+
+    public void setAutoReload(boolean autoReload) {
+        this.autoReload = autoReload;
+    }
+
+    public long getPeriod() {
+        return period;
+    }
+
+    public void setPeriod(long period) {
+        this.period = period;
     }
 }

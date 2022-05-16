@@ -56,7 +56,7 @@ public class RouterController {
     @PostMapping("/reload")
     public BaseResult<String> reload() {
         if (permissionCheck.hasInnerPermission()) {
-            routerManager.reloadRouter();
+            routerManager.loadRouter();
             return OkResult.empty();
         } else {
             return new FailResult<>(ResultCode.FAILURE_UNAVAILABLE);

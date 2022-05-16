@@ -46,7 +46,12 @@ logging:
 
 just-data:
   macro:
+    # 全局变量文件路径
     file: config\macro.properties
+    # 是否在文件变动后自动重载文件内容
+    autoReload: true
+    # 自动重载判定间隔时长，单位毫秒
+    period: 2000
   # 需要加载的数据库驱动列表
   drivers:
       # 驱动名
@@ -79,6 +84,10 @@ just-data:
   items:
     # 操作项配置文件路径
     path: src\test\java\resources\one
+    # 是否在文件变动后自动重载操作项文件
+    autoReload: true
+    # 自动重载判定间隔时长，单位毫秒
+    period: 5000
   # 接口异常配置
   exception:
     # 接口异常输出方式（CONSOLE - 控制台；FILE - 独立文件；CLIENT - 客户端），多个方式以“,”隔开

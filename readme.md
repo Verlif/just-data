@@ -19,33 +19,24 @@ __数据库接口映射服务__
 
 ## 特点
 
-* 通过XML文件生成后台接口。
+* 通过XML文件生成后台接口，无需重启即可动态修改接口。
 * 通过配置完成登录、登出与接口权限控制。
 * 数据库无关性，登录与权限都由使用者自己决定。
 * 支持多数据源同时连接。
 * 轻量，不需要安装、占用资源小。
 * 快速，启动快、接口响应快。
 
-## 使用
-
-你要做的，就是配置`application.yml`来设定服务，书写`xml`来生成需要的接口。其他的事情`Just-data`会来搞定的。
-
-1. 修改`application.yml`配置（如果需要的话）。
-2. 编写`XML配置`文件（也可以在第`3`步后编辑，然后通过`/router/reload`接口重加载）。
-3. 启动`just-data.jar`。
-4. 访问编写的接口。
-
 ## 工作原理
 
 基本原理就是解析XML文件，获取需要连接的数据库和需要创建的接口信息。通过服务内置的解析器与映射器来完成接口生成工作。
 
-### 工作流程
+### 快速开始
 
-1. 通过配置的操作项文件路径加载操作项与数据库信息。
-2. 创建对应的数据库连接（这里使用的是Druid连接池）。
-3. 加载操作项，并映射到对应数据库。
-4. 根据加载的操作项生成操作项接口。
-5. 操作项生成的接口都在`/api/{label}/{api}`下。
+1. 根据 [模板](docs/template/template.xml) 创建操作项 __XML配置文件__ 。
+2. 添加所使用的数据库驱动文件，并在`application.yml`的`drivers`中配置 __驱动名__ 及 __驱动文件路径__ 。
+3. 修改`application.yml`中的`items.path`，指向创建的 __XML配置文件__ 或其 __文件夹__ 。
+4. 启动`just-data.jar`。
+5. 通过`IP:PORT/api/{label}/{api}`访问创建的接口。
 
 ## TODO
 
@@ -96,6 +87,19 @@ Just-data的配置基于`SpringBoot`，目前有两个配置文件：
 
 ```yaml
 just-data:
+  macro:
+    # 全局变量文件路径
+    file: config\macro.properties
+    # 是否在文件变动后自动重载文件内容
+    autoReload: true
+    # 自动重载判定间隔时长，单位毫秒
+    period: 2000
+  # 需要加载的数据库驱动列表
+  drivers:
+    # 驱动名
+    - driverName: com.mysql.cj.jdbc.Driver
+      # 驱动文件地址
+      driverFile: drivers\mysql-connector-java-8.0.27.jar
   # SQL配置
   sql:
     # 是否输出到控制台（true - 输出到控制台；false - 不输出）
@@ -122,6 +126,10 @@ just-data:
   items:
     # 操作项配置文件路径
     path: src\test\java\resources\one
+    # 是否在文件变动后自动重载操作项文件
+    autoReload: true
+    # 自动重载判定间隔时长，单位毫秒
+    period: 5000
   # 接口异常配置
   exception:
     # 接口异常输出方式（CONSOLE - 控制台；FILE - 独立文件；CLIENT - 客户端），多个方式以“,”隔开

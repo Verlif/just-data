@@ -1,7 +1,5 @@
 package idea.verlif.justdata;
 
-import idea.verlif.justdata.util.RsaUtils;
-
 import java.util.HashMap;
 import java.util.Map;
 
@@ -18,6 +16,7 @@ public class Main {
             System.out.println(key + " - " + attrMap.get(key));
         }
     }
+
     public static Map<String, String> getAttrMap(String attrStr) {
         Map<String, String> attrMap = new HashMap<>();
         char[] chars = attrStr.toCharArray();
