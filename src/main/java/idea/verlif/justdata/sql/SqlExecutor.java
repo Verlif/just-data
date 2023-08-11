@@ -23,10 +23,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.sql.*;
 import java.util.*;
 
 /**
@@ -151,7 +148,7 @@ public class SqlExecutor {
         // 对sql进行日志输出
         if (sqlConfig.isPrint()) {
             LOGGER.debug("Sql    - " + sql.replace("\n", "").trim());
-            if (list.size() > 0) {
+            if (!list.isEmpty()) {
                 LOGGER.debug("Params - " + Arrays.toString(list.toArray()));
             }
         }
@@ -179,6 +176,27 @@ public class SqlExecutor {
         Connection connection = getConnect(item.getLabel());
         PreparedStatement ps = sqlToPre(sql, connection);
         return ps.executeQuery();
+    }
+
+    /**
+     * 执行查询sql
+     *
+     * @param label 数据库标签
+     * @param sql   sql语句
+     * @return 查询结果
+     * @throws SQLException 执行错误
+     */
+    public ResultSet query(String label, String sql) throws Exception {
+        // 对sql进行日志输出
+        if (sqlConfig.isPrint()) {
+            LOGGER.debug("Sql    - " + sql.trim());
+        }
+        // 切换数据源
+        DataSourceUtils.switchDB(label);
+        // 获取数据库连接
+        Connection connection = getConnect(label);
+        Statement statement = connection.createStatement();
+        return statement.executeQuery(sql);
     }
 
     /**

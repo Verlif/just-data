@@ -170,7 +170,13 @@ public abstract class SqlPoint extends VarsContext implements VarsHandler {
                 break;
             }
         }
-        return value == null || value instanceof String ? value : Double.valueOf(value.toString());
+        if (value instanceof Integer) {
+            return Integer.valueOf(value.toString());
+        } else if (value instanceof Double) {
+            return Double.valueOf(value.toString());
+        } else {
+            return value;
+        }
     }
 
     @Override
